@@ -15,39 +15,39 @@
 
 //  Transfer function:
 
-H(s) = s + 1
+  H(s) = s + 1
 
-s --> s / wc    :    H(s) = (s + wc) / wc
+  s --> s / wc    :    H(s) = (s + wc) / wc
 
-wc = 2 / Ts * aTan(2 * pi * Hz * Ts / 2)    (prewarping at cutoff)
+  wc = 2 / Ts * aTan(2 * pi * Hz * Ts / 2)    (prewarping at cutoff)
 
 
 //  Bilinear transform (BLT):
 
-        2 * (z - 1)
-s --> --------------    (inverse trapezoidal integrator)
-       Ts * (z + 1)
+          2 * (z - 1)
+  s --> --------------    (inverse trapezoidal integrator)
+         Ts * (z + 1)
 
-          2 * z - 2 + Ts * wc * z + Ts * wc                                                  /        2    \              /        2    \
-         ----------------------------------                                                 〈 1 - ---------- ⟩ * z^-1  +  〈 1 + ---------- ⟩
-                     Ts * z + Ts                   (Ts * wc + 2) * z + (Ts * wc - 2)         \     Ts * wc /              \     Ts * wc /
-H(z) = --------------------------------------  =  -----------------------------------  =  ---------------------------------------------------
-                        wc                               Ts * wc * z + Ts * wc                                  z^-1  +  1
+            2 * z - 2 + Ts * wc * z + Ts * wc                                                  /        2    \              /        2    \
+           ----------------------------------                                                 〈 1 - ---------- ⟩ * z^-1  +  〈 1 + ---------- ⟩
+                       Ts * z + Ts                   (Ts * wc + 2) * z + (Ts * wc - 2)         \     Ts * wc /              \     Ts * wc /
+  H(z) = --------------------------------------  =  -----------------------------------  =  ---------------------------------------------------
+                          wc                               Ts * wc * z + Ts * wc                                  z^-1  +  1
 
 
 //  Intermediate variable:
 
-        2                            2                                      1
-g = ---------  =  -----------------------------------------  =  ------------------------    //  could use PI_SRATE = pi / sRate as a constant and just multiply it by Hz...
-     Ts * wc             2          /               Ts \               /        Hz  \
-                   Ts * ---- * aTan〈 2 * pi * Hz * ----- ⟩         aTan〈 pi * -------- ⟩
-                         Ts         \                2 /               \      sRate  /
+          2                            2                                      1
+  g = ---------  =  -----------------------------------------  =  ------------------------    //  could use PI_SRATE = pi / sRate as a constant and just multiply it by Hz...
+       Ts * wc             2          /               Ts \               /        Hz  \
+                     Ts * ---- * aTan〈 2 * pi * Hz * ----- ⟩         aTan〈 pi * -------- ⟩
+                           Ts         \                2 /               \      sRate  /
 
 //  Coefficients:
 
-b0 = 1 + g
-b1 = 1 - g
-a0 = a1 = 1    =>  (-a1 = -1)
+  b0 = 1 + g
+  b1 = 1 - g
+  a0 = a1 = 1    =>  (-a1 = -1)
 
 
 //  Transposed direct form II:
@@ -63,10 +63,10 @@ a0 = a1 = 1    =>  (-a1 = -1)
 
 ////  Algorithm:
 
-y  = b0 * x + z1;
-z1 = b1 * x - y;
+  y  = b0 * x + z1;
+  z1 = b1 * x - y;
 
 
 //  Bode plot ("analog" model, magnitude only):
 
-https://www.desmos.com/calculator/4wo4pqiz8p
+  https://www.desmos.com/calculator/4wo4pqiz8p
