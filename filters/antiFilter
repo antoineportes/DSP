@@ -32,7 +32,7 @@
            -----------------------------------                                                〈 1 - ---------- ⟩ * z^-1  +  〈 1 + ---------- ⟩
                        Ts * z + Ts                    (Ts * wc + 2) * z + (Ts * wc - 2)        \     Ts * wc /              \     Ts * wc /
   H(z) = ---------------------------------------  =  -----------------------------------  =  -------------------------------------------------
-                          wc                                Ts * wc * z + Ts * wc                                 z^-1  +  1
+                          wc                              (Ts * wc) * z + (Ts * wc)                               z^-1  +  1
 
 
 //  Intermediate variable:
@@ -70,3 +70,71 @@
 //  Bode plot ("analog" model, magnitude only):
 
   https://www.desmos.com/calculator/4wo4pqiz8p
+
+
+
+################################################################
+HIGH-PASS
+################################################################
+
+
+//  Transfer function:
+
+  H(s) = (s + 1) / s
+
+  s --> s / wc    :    H(s) = (s + wc) / s
+
+  wc = 2 / Ts * aTan(2 * pi * Hz * Ts / 2)    (prewarping at cutoff)
+
+
+//  Bilinear transform (BLT):
+
+          2 * (z - 1)
+  s --> --------------    (inverse trapezoidal integrator)
+         Ts * (z + 1)
+
+            2 * z - 2  +  Ts * wc * z  +  Ts * wc                                                    / Ts * wc    \       / Ts * wc    \
+           ---------------------------------------                                                  〈 --------- + 1 ⟩  +  〈 --------- - 1 ⟩ * z^-1
+                         Ts * z + Ts                      (Ts * wc + 2) * z  +  (Ts * wc - 2)        \    2       /       \    2       /
+  H(z)  =  -----------------------------------------  =  -------------------------------------  =  ----------------------------------------------
+                          2 * z - 2                                   2 * z  -  2                                  1  -  z^-1
+                        -------------
+                         Ts * z + Ts
+
+
+//  Intermediate variable:
+
+                              2          /              Ts \
+                       Ts * ----- * aTan〈2 * pi * Hz * ----- ⟩
+         Ts * wc              Ts         \               2 /
+  tmp = ---------  =  -----------------------------------------  =  aTan(PI_SRATE * Hz)
+            2                             2
+
+//  Coefficients:
+
+  b0 = tmp + 1
+  b1 = tmp - 1
+  a0 = 1
+  a1 = -1    =>  (-a1 = 1)
+
+
+//  Transposed direct form II:
+////  Block diagram:
+
+  x[n] -->o-->[ * b0 ]-->(+)------------->o--> y[n]
+          |               ^               |
+          |               |               |
+          |            [ z^-1 ]           |
+          |               ^               |
+          |               |               |
+          |-->[ * b1 ]-->(+)<--[ * -a1 ]<-|
+
+////  Algorithm:
+
+  y  = b0 * x + z1;
+  z1 = b1 * x + y;
+
+
+//  Bode plot ("analog" model, magnitude only):
+
+  https://www.desmos.com/calculator/hgfzihkhmq
