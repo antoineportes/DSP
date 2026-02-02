@@ -5,7 +5,8 @@ This is where I design filters, waveshapers and probably more.
 You'll mostly find math and block diagrams here, maybe some notes about stuff I'm affraid to forget.
 
 Those are not algorithms. Those are my babies. If you use them, I'd like to know and be credited.
-Hence the MIT license.
+Hence the MIT license.\
+(Of course if you steal my ideas, I'll probably never know... so be a citizen of the world or be your own judge.)
 
 At some point I will upload code using this material (probably [JSFX](https://www.cockos.com/EEL2/)).
 I consider it examples of implementation and don't care so much for it.
