@@ -37,16 +37,16 @@
 
 //  Intermediate variable:
 
-          2                            2                                      1
-  g = ---------  =  -----------------------------------------  =  ------------------------    //  could use PI_SRATE = pi / sRate as a constant and just multiply it by Hz...
-       Ts * wc             2          /               Ts \               /        Hz  \
-                     Ts * ---- * aTan〈 2 * pi * Hz * ----- ⟩         aTan〈 pi * -------- ⟩
-                           Ts         \                2 /               \      sRate  /
+            2                            2                                      1
+  tmp = ---------  =  -----------------------------------------  =  ------------------------    //  could use PI_SRATE = pi / sRate as a constant and just multiply it by Hz...
+         Ts * wc             2          /               Ts \               /        Hz  \
+                       Ts * ---- * aTan〈 2 * pi * Hz * ----- ⟩         aTan〈 pi * -------- ⟩
+                             Ts         \                2 /               \      sRate  /
 
 //  Coefficients:
 
-  b0 = 1 + g
-  b1 = 1 - g
+  b0 = 1 + tmp
+  b1 = 1 - tmp
   a0 = a1 = 1    =>  (-a1 = -1)
 
 
