@@ -38,7 +38,7 @@
 //  Intermediate variable:
 
             2                            2                                      1
-  tmp = ---------  =  -----------------------------------------  =  ------------------------    //  could use PI_SRATE = pi / sRate as a constant and just multiply it by Hz...
+  tmp = ---------  =  -----------------------------------------  =  -----------------------     //  could use PI_SRATE = pi / sRate as a constant and just multiply it by Hz...
          Ts * wc             2          /               Ts \               /        Hz  \       //  could create tmp.cutoff = aTan(PI_SRATE * Hz) to compute it only once per cascade
                        Ts * ---- * aTan〈 2 * pi * Hz * ----- ⟩         aTan〈 pi * -------- ⟩     //  or maybe g = aTan(PI_SRATE * Hz) ; _g = 1 / g; *
                              Ts         \                2 /               \      sRate  /      //  * In a function, g and _g could be local variables (?).
