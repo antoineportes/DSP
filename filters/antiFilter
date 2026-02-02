@@ -1,0 +1,72 @@
+/*
+  I've created this filter as a part of a "fractional order" filter.
+  It's the inverse of a 1-pole low-pass filter:
+  H(s) = 1 / (s + 1)  -->  H(s) = s + 1
+
+  Its initial purpose was to cancel an instance of RC circuit in the analog model and never actually be heard, but it turns out that it makes a quite interesting high-shelf.
+  (In such use cases, ultrasonic filtering is strongly advised so that clippers and meters don't go crazy).
+
+  Notice:
+  Hz is the cutoff frequency (in Hertz).
+  sRate is the sampling frequency (in Hertz i.e. samples per second).
+  Ts = 1 / sRate is the sampling period.
+*/
+
+
+//  Transfer function:
+
+H(s) = s + 1
+
+s --> s / wc    :    H(s) = (s + wc) / wc
+
+wc = 2 / Ts * aTan(2 * pi * Hz * Ts / 2)    (prewarping at cutoff)
+
+
+//  Bilinear transform (BLT):
+
+        2 * (z - 1)
+s --> --------------    (inverse trapezoidal integrator)
+       Ts * (z + 1)
+
+          2 * z - 2 + Ts * wc * z + Ts * wc                                                  /        2    \              /        2    \
+         ----------------------------------                                                 〈 1 - ---------- ⟩ * z^-1  +  〈 1 - ---------- ⟩
+                     Ts * z + Ts                   (Ts * wc + 2) * z + (Ts * wc - 2)         \     Ts * wc /              \     Ts * wc /
+H(z) = --------------------------------------  =  -----------------------------------  =  ---------------------------------------------------
+                        wc                               Ts * wc * z + Ts * wc                                  z^-1  +  1
+
+
+//  Intermediate variable:
+
+        2                            2                                      1
+g = ---------  =  -----------------------------------------  =  ------------------------    //  could use PI_SRATE = pi / sRate as a constant and just multiply it by Hz...
+     Ts * wc             2          /               Ts \               /        Hz  \
+                   Ts * ---- * aTan〈 2 * pi * Hz * ----- ⟩         aTan〈 pi * -------- ⟩
+                         Ts         \                2 /               \      sRate  /
+
+//  Coefficients:
+
+b0 = 1 + g
+b1 = 1 - g
+a0 = a1 = 1    =>  (-a1 = -1)
+
+
+//  Transposed direct form II:
+////  Block diagram:
+
+  x[n] -->o-->[ * b0 ]-->(+)------------->o--> y[n]
+          |               ^               |
+          |               |               |
+          |            [ z^-1 ]           |
+          |               ^               |
+          |               |               |
+          |---[ * b1 ]-->(+)<--[ * -a1 ]--|
+
+////  Algorithm:
+
+y  = b0 * x + z1;
+z1 = b1 * x - y;
+
+
+//  Bode plot ("analog" model, magnitude only):
+
+https://www.desmos.com/calculator/4wo4pqiz8p
