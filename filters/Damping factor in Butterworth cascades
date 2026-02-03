@@ -1,0 +1,95 @@
+################################################################
+          DAMPING FACTORS IN BUTTERWORTH CASCADES
+################################################################
+
+
+If you've ever cascaded filters to make a Butterworth high-order filter you're probably familiar
+with formulae (for R) like:                                          //	2R = 2 * R  ;  Q = 1 / 2R
+
+	R = cos(pi * (i + 1) / N)              if N is odd
+	R = cos(pi * (2 * i + 1) / (2 * N))    if N is even
+
+	Wouldn't it be convenient to have ONE formula that works whether N is odd or even?
+
+	Well, here it comes.
+
+	First, think backwards: reverse the filters' indexes (i.e. always put the most resonant first).
+
+	Then instead of the constant pi, use the constant pi / 2.
+
+
+Get R:
+
+	i is the 2-pole filter's index (starting at 0)
+	N is the order of the cascade
+	Ri is the damping factor of the filter of index i.
+
+	Global const: M_PI_2 = pi / 2
+
+	For filter i, define Xi = (N - (1 + 2 * i)) / N    //    or (N - 1 - 2 * i) / N ...
+
+	Then Ri = cos(M_PI_2 * Xi)
+
+
+	Depending on the way you implement your filters you might prefer:
+
+	2Ri = 2 * Ri
+
+	or
+
+	Qi = 1 / (2 * Ri)
+
+
+	Yep, it's THAT simple.
+
+
+Further optimisation:
+
+	Since (according to Andy "Cytomic" Simper) sin gives better approximations than cos,
+	and since cos(x) = sin(pi / 2 + x):
+
+	Ri = sin(M_PI_2 + M_PI_2 * Xi)    =    sin(M_PI_2 * (1 + Xi))
+
+	or we could redefine Xi as (N + N - 1 - 2 * i) / N and get:
+
+	Ri = sin(M_PI_2 * Xi)
+
+
+Example 1:
+
+	N = 7
+
+	X0	=	(7 + 7 - 1 - 2 * 0) / N      =	13 / 7
+	R0	=	sin(M_PI_2 * X0)            ~=	0.222520933956
+	2R0	~=	0.445041867913
+	Q0	~=	2.24697960372
+
+	X1	=	(7 + 7 - 1 - 2 * 1) / N      =	11 / 7
+	R1	=	sin(M_PI_2 * X1)            ~=	0.623489801859
+	2R1	~=	1.24697960372
+	Q1	~=	0.801937735805
+
+	X2	=	(7 + 7 - 1 - 2 * 2) / N      =	9 / 7
+	R2	=	sin(M_PI_2 * X2)            ~=	0.900968867902
+	2R2	~=	1.8019377358
+	Q2	~=	0.554958132087
+
+	(Don't forget the extra 1-pole filter.)
+
+
+Example 2:
+
+	N = 4
+
+	X0	=	(4 + 4 - 1 - 2 * 0) / N      =	7 / 4
+	R0	=	sin(M_PI_2 * X0)            ~=	0.382683432365
+	2R0	~=	0.76536686473
+	Q0	~=	1.30656296488
+
+	X1	=	(4 + 4 - 1 - 2 * 1) / N      =	5 / 4
+	R1	=	sin(M_PI_2 * X1)            ~=	0.923879532511
+	2R1	~=	1.84775906502
+	Q1	~=	0.541196100146
+
+
+	Yep, it does work!
