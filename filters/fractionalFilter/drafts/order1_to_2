@@ -1,0 +1,29 @@
+################################################################
+          FRACTIONAL FILTER: ORDER 1 -> 2
+################################################################
+
+  This is the first (and only at the time of writing) continuous-slope filter that I've been able to
+  implement. It's not fractional per se: it's always a 2-pole filter based upon the SVF filter, but
+  extra gains in the block diagram make it crossfade between a 1-pole filter and a 2-pole filter in
+  a way that reproduces the expected behaviour of a fractional-order filter.
+  
+  It goes from 6.02... dB/oct to 12.04... dB/oct. 
+  It's of limited use on its own but I need to write it down so it can serve as a template to workaround
+  the the fractional exponent for other orders — specifically 0 to 1, for I'm pretty sure that 0 to 1
+  and 1 to 2 are the core elements of the intended system.
+
+//  Block diagram
+
+                             y1
+                             ^
+                             |
+  x -->(+)---->[ * 1/s ]---->o-->[ * 1/s ]-->o--> y2
+        ^ -                  |               |
+        |                    v               |
+       (+)<--[ * g2 * 2R ]<--o               |
+        ^                    |               |
+        |                    v               v
+        |                 [ * g1 ]        [ * g2 ]
+        |                    |               |
+        |                    v               |
+   y <--o<------------------(+)<--------------
