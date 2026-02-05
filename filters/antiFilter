@@ -143,3 +143,58 @@ HIGH-PASS
 //  Bode plot ("analog" model, magnitude only):
 
   https://www.desmos.com/calculator/hgfzihkhmq
+
+
+ALTERNATIVE IMPLEMENTATION: TPT / ZDF
+
+//  Inverse trapezoidal integrator
+  
+   y        2 * (z - 1)                              2
+  ---  =  --------------    <=>    y * z + y  =  --------- * (x * z - x)
+   x       Ts * (z + 1)                           wc * Ts
+
+             2                   2
+         --------- * x * z - --------- * x - y
+          wc * Ts             wc * Ts                   2            /    2           \
+  y  =  ---------------------------------------  =  --------- * x - 〈 --------- * x + y ⟩ * z^-1
+                          z                          wc * Ts         \ wc * Ts        /
+
+  Hence:
+
+  x -->[ _g ]-->o--->(+)--->o--> y      //    _g = 2 / (wc * Ts)
+                |     ^ -   |
+                |     |     |
+                |  [ z^-1 ] |
+                |     ^     |
+                |     |     |
+                |--->(+)<---|
+
+
+//  Low-pass
+////  "Analog" block diagram:
+
+  x -->o-->[ * s ]-->(+)--> y          //    An integrator basically divides b s
+       |              ^ +              //    so an inverse integrator basically multiplies by s.
+       |--------------|
+
+
+////  Replacing the inverse integrator with an inverse trapezoidal integrator:
+                    w           v
+  x -->o-->[ _g ]-->o--->(+)--->o-->(+)--> y
+       |            |     ^ -   |    ^ +
+       |            |     |     |    |
+       |            |  [ z^-1 ] |    |
+       |            |     ^     |    |
+       |            |     | u   |    |
+       |            |--->(+)<---|    |
+       |-----------------------------|
+
+
+////  Alogorithm:
+
+  _g  =  1 / aTan(PI_SRATE * Hz);
+  
+  w  = _g * x;
+  v  =  w - u;
+  u  =  w + v;
+  y  =  v + x;
