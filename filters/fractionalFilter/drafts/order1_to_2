@@ -15,7 +15,7 @@
 
 //  Block diagram
 
-        y0                   y1              y2
+       (y0)                 (y1)            (y2)
         ^                    ^               ^
         |                    |               |
   x -->(+)---->[ * 1/s ]---->o-->[ * 1/s ]-->o
@@ -27,13 +27,39 @@
         |                 [ * g1 ]        [ * g2 ]
         |                    |               |
         |                    v               |
-   y <--o<------------------(+)<--------------
+  y <---o<------------------(+)<--------------
 
-   g2^2 = N - 1          [ 1 <= N <= 2 ]          //          These formulae work for this range of N.
-   g1^2 = 1 - g2^2       [ 1 <= N <= 2 ]          //          I would probably have to tweak them in the general system.
-   
-   When g2 = 0, g1 = 1 and we retrieve the block diagram of a 1-pole low-pass filter.
-   When g2 = 1, g1 = 0 and we retrieve the block diagram of a 2-pole SVF filter. Then y0 = yHP, y1 = yBP, y2 = y = yLP.
+  g2^2 = N - 1          [ 1 <= N <= 2 ]          //          These formulae work for this range of N.
+  g1^2 = 1 - g2^2       [ 1 <= N <= 2 ]          //          I would probably have to tweak them in the general system. *
+  
+  When g2 = 0, g1 = 1 and we retrieve the block diagram of a 1-pole low-pass filter.
+  When g2 = 1, g1 = 0 and we retrieve the block diagram of a 2-pole SVF filter. Then y0 = yHP, y1 = yBP, y2 = y = yLP.
+
+  * g1Sq  =  ( N >= 2 * i ) & ( N < 2 * i + 2 )  ?  abs( floor(N) - mod(N , 1) )  :  0;          
+    g2Sq  =  ( N <= 2 * i + 1 )  ?  0  :  ( N < 2 * i + 2 )  ?  N - floor(N)  :  1;
+    g1    =  sqRt( g1Sq );
+    g2    =  sqRt( g2Sq );
+
+    N is the order of the cascade,
+    i is the filter's index.
+
+  The issue with these formulae is that if I start by defining g1 and g2, then I have to find R according to them.
+  This works fine up until N > 2. Then there are as many unknown R[i] as there are 2-pole filters in the cascade...
+
+  Luckily, I found this formula:    https://github.com/antoineportes/DSP/blob/main/filters/Damping%20factors%20in%20Butterworth%20cascades
+  which works with fractional N:    https://www.desmos.com/calculator/qiaxwl94ug
+  Then R[i] are no longer unknown, and knowing that the final gain at cutoff is:    resonance * 2^-0.5
+  or |H(jw)|²  =  rsonance^2 / 2  when  w = wc = 1
+  I can solve for g1 or g2 using the identity:
+
+  g1 = sqRt( 1 - g2^2 )    or    g2 = sqRt( 1 - g1^2 )
+
+  I haven't tried yet. I first need to find a filter that goes from 0 to 1 (probably reusing g1 and introducing g0); then I
+  could combine it with this one and get a filter that smoothly goes from 0 to 2-pole.
+  A cascade of such filters would smoothly go from 0 to [IMAGINATION_OVERLOAD].    (assuming your CPU has more imagination than you)
+
+  Anyway, such adjustments don't affect the block diagram nor the transfer function (which both come with pre-computed R, g1 and g2).
+  So let's move on.
 
 
 //  Transfer function
