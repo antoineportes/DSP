@@ -10,6 +10,9 @@
   Hz is the cutoff frequency (in Hertz).
   sRate is the sampling frequency (in Hertz i.e. samples per second).
   Ts = 1 / sRate is the sampling period.
+
+  "Low-pass" actually means "Anti-Low-pass"
+  "High-pass" actually means "Anti-High-pass"
 */
 
 
@@ -157,9 +160,9 @@ ALTERNATIVE IMPLEMENTATION: TPT / ZDF
 
              2                   2
          --------- * x * z - --------- * x - y
-          wc * Ts             wc * Ts                   2            /    2           \
-  y  =  ---------------------------------------  =  --------- * x - 〈 --------- * x + y ⟩ * z^-1
-                          z                          wc * Ts         \ wc * Ts        /
+          wc * Ts             wc * Ts                   2            /    2            \
+  y  =  ---------------------------------------  =  --------- * x - 〈 ---------- * x + y ⟩ * z^-1
+                          z                          wc * Ts         \ wc * Ts         /
 
   Hence:
 
@@ -198,5 +201,58 @@ ALTERNATIVE IMPLEMENTATION: TPT / ZDF
   
   u  = _g * x;        //  tmp1
   v  =  u - z1;       //  tmp2
+  z1 =  u + v;
+  y  =  v + x;
+
+
+//  Trapezoidal integrator
+  
+   y        2 * (z - 1)                              2
+  ---  =  --------------    <=>    y * z + y  =  --------- * (x * z - x)
+   x       Ts * (z + 1)                           wc * Ts
+
+          wc * Ts             wc * Ts
+         --------- * x * z + --------- * x + y
+             2                   2                   wc * Ts         / wc * Ts         \
+  y  =  ---------------------------------------  =  --------- * x + 〈 ---------- * x + y ⟩ * z^-1
+                          z                             2            \    2            /
+
+  Hence:
+
+  x -->[ g ]-->o--->(+)--->o--> y      //    g = (wc * Ts) / 2
+               |     ^ +   |
+               |     |     |
+               |  [ z^-1 ] |
+               |     ^     |
+               |     |     |
+               |--->(+)<---|
+
+
+//  High-pass
+////  "Analog" block diagram:
+
+  x -->o-->[ / s ]-->(+)--> y
+       |              ^ +
+       |--------------|
+
+
+////  Replacing the inverse integrator with an inverse trapezoidal integrator:
+                   u           v
+  x -->o-->[ g ]-->o--->(+)--->o-->(+)--> y
+       |           |     ^ +   |    ^ +
+       |           |     |     |    |
+       |           |  [ z^-1 ] |    |
+       |           |     ^     |    |
+       |           |     |     |    |
+       |           |--->(+)<---|    |
+       |----------------------------|
+
+
+////  Alogorithm:
+
+  g  =  aTan(PI_SRATE * Hz);
+  
+  u  =  g * x;        //  tmp1
+  v  =  u + z1;       //  tmp2
   z1 =  u + v;
   y  =  v + x;
