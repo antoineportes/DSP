@@ -181,13 +181,13 @@ ALTERNATIVE IMPLEMENTATION: TPT / ZDF
 
 
 ////  Replacing the inverse integrator with an inverse trapezoidal integrator:
-                    w           v
+                    u           v
   x -->o-->[ _g ]-->o--->(+)--->o-->(+)--> y
        |            |     ^ -   |    ^ +
        |            |     |     |    |
        |            |  [ z^-1 ] |    |
        |            |     ^     |    |
-       |            |     | u   |    |
+       |            |     |     |    |
        |            |--->(+)<---|    |
        |-----------------------------|
 
@@ -196,7 +196,7 @@ ALTERNATIVE IMPLEMENTATION: TPT / ZDF
 
   _g  =  1 / aTan(PI_SRATE * Hz);
   
-  w  = _g * x;
-  v  =  w - u;
-  u  =  w + v;
+  u  = _g * x;        //  tmp1
+  v  =  u - z1;       //  tmp2
+  z1 =  u + v;
   y  =  v + x;
