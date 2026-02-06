@@ -236,7 +236,7 @@ ALTERNATIVE IMPLEMENTATION: TPT / ZDF
        |--------------|
 
 
-////  Replacing the inverse integrator with an inverse trapezoidal integrator:
+////  Replacing the integrator with a trapezoidal integrator:
                    u           v
   x -->o-->[ g ]-->o--->(+)--->o-->(+)--> y
        |           |     ^ +   |    ^ +
