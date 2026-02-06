@@ -1,5 +1,5 @@
 /*
-  I've created this filter as a part of a "fractional order" filter.
+  I've created this filter as a part of a "fractional order" filter [project].
   It's the inverse of a 1-pole low-pass filter:
   H(s) = 1 / (s + 1)  -->  H(s) = s + 1
 
@@ -178,7 +178,7 @@ ALTERNATIVE IMPLEMENTATION: TPT / ZDF
 //  Low-pass
 ////  "Analog" block diagram:
 
-  x -->o-->[ * s ]-->(+)--> y          //    An integrator basically divides b s
+  x -->o-->[ * s ]-->(+)--> y          //    An integrator basically divides by s
        |              ^ +              //    so an inverse integrator basically multiplies by s.
        |--------------|
 
