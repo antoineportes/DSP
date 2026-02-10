@@ -244,9 +244,16 @@ Time discretisation
   m1    =  sqRt (1 - tmp1);
   m2    =  sqRt (lp);
   m3    =  sqRt (hp + bp);
+  
+  // Band-Pass normalisation
+  tmp1  =  bp * (1 - res);
+  norm  =  1  +  tmp1 * tmp1;
 
 
 @sample
+
+  //  Normalise BP
+  in  *=  norm;
 
   //  Mixing inputs
   xLP  =  in * m0;
@@ -276,6 +283,9 @@ Time discretisation
 
   //  Mixing outputs
   out  =  m2 * yLP  +  m3 * yHP;
+
+
+  [ tested, working ]
 
 
 /*
