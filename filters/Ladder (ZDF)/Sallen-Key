@@ -1,0 +1,51 @@
+/*
+  Concept:
+    The MIMO (Multi-In / Multi-Out) Sallen-Key filter is a series of two 1-pole filters with positive feedback.
+  
+    The first 1-pole filter is a transposed multimode filter: it can be a HP, a LP or any mixture.
+    Transposed means that the variable state is achieved by mixing input signals.
+  
+    The second 1-pole filter is a "regular" multimode filter.
+    "Regular" means that it has one input and mixes the output signals.
+  
+    The positive feedback goes whether from the LP output to the HP input or from the HP output to the LP input.
+    So the basic structure is a BP (LP and HP in series). Hence the POSITIVE feedback: a BP has no phase shift
+    at the cutoff frequency.
+
+    I chose the second option for the feedback: HP out to LP in.
+    Why? Since there's gonna be non-linearities, I thought putting the LP first in the chain would reduce aliasing.
+    I might be wrong but the (linear) transfer function is not affected by this choice so at least it doesn't hurt.
+*/
+
+################################################################
+Building the analog block diagram
+################################################################
+
+//  Transposed multimode 1-pole filter
+
+  xHP -----------------------
+                            |
+                          + v
+  xLP -->(+)-->[ 1 / s ]-->(+)-->o--> y
+          ^ -                    |
+          |                      |
+          ------------------------
+
+//  "Regular" multimode 1-pole filter
+
+  x -->(+)------------>o--> yHP
+        ^ -            |
+        |              |
+        o<--[ 1 / s ]<--
+        |
+        ------------------> yLP
+
+
+
+
+
+
+
+
+
+
