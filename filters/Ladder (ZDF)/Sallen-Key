@@ -59,10 +59,13 @@ Building the analog block diagram
                         | G                                                      |
                         ------------------------[ k ]-----------------------------
 
-  LP ->  m0 = 1        HP ->  m0 = 0        BP ->  m0 = 1
-         m1 = 0               m1 = 1               m1 = 0
-         m2 = 1               m2 = 0               m2 = 0
-         m3 = 0               m3 = 1               m3 = 1
+  LP ->  m0 = 1        HP ->  m0 = 0        BP ->  m0 = 1        //    0 - 1 - 1 - 0 also gives a BP, only with HP first.
+         m1 = 0               m1 = 1               m1 = 0        //    With non-linearities involved, it should sound different.
+         m2 = 1               m2 = 0               m2 = 0        //    Just realised that after all the work is done, so too late.
+         m3 = 0               m3 = 1               m3 = 1        //    But it's worth experimenting.
+                                                                 //    If you try the second BP and need to plot it, be careful: I've
+                                                                 //    simplified the transfer function on the assumption that m1 * m2
+                                                                 //    is always = 0, which no longer stands in that case.
 
   This diagram will be further referred to as "main block diagram".
 
