@@ -200,20 +200,29 @@ Time discretisation
 
 
 @slider
-  
-  k  =  reso * 1.99;              //  The (linear) filter explodes at k = 2 (see Desmos links).
-  
+
+  //  Cutoff variables
   g     =  aTan (PI_SRATE * Hz);   //  Hz is the cutoff frequency (in Hz)
   tmp1  =  1 + g;
   gHp   =  1 / tmp1;
   gLP   =  g * gHP;
 
+  //  Feedback variables
+  k  =  reso * 1.99;              //  The (linear) filter explodes at k = 2 (see Desmos links).
+                                  //  Assuming slider "reso" ranges from 0 to 1 here.
   fbG2  =  k * tmp1;
   fbG1  =  k;
   fbG0  =  k * g;
 
   tmp1  =  tmp1 * tmp1;
   fbDen =  1 / (tmp1 - fbG0);
+  
+  //  SVF variables
+  tmp1  =  lp + bp;
+  m0    =  sqRt (tmp1);
+  m1    =  sqRt (1 - tmp1);
+  m2    =  sqRt (lp);
+  m3    =  sqRt (hp + bp);
 
 
 @sample
@@ -230,7 +239,7 @@ Time discretisation
   fb  *=  fbDen;
 
   //  Adding feedback
-  xLP -=  fb;
+  xLP +=  fb;
 
   //  MM1
   tmp1 =  gLP * (xLP - tmp1);
@@ -246,6 +255,7 @@ Time discretisation
 
   //  Mixing outputs
   out  =  m2 * yLP  +  m3 * yHP;
+
 
 /*
   Then just add some non-linearities where you see fit.
