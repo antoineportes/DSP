@@ -15,7 +15,11 @@
     I chose the second option for the feedback: HP out to LP in.
     Why? Since there's gonna be non-linearities, I thought putting the LP first in the chain would reduce aliasing.
     I might be wrong but the (linear) transfer function is not affected by this choice so at least it doesn't hurt.
+    
+  If you enjoy relying on copy/pasting closed equations more than achieving freedom through the actual understanding
+  of what you're doing... Scroll to the full algorithm at the bottom. (Reverse psychology much.)
 */
+
 
 ################################################################
 Building the analog block diagram
@@ -40,12 +44,220 @@ Building the analog block diagram
         |
         ------------------> yLP
 
+//  Sallen-Key filter
+
+                                                                --------------------->[ m2 ]---
+                                                                |                             |
+                                                                |  F                          v
+        ---->[ m1 ]----------------------------------           o<---[ 1 / s ]<---           (+)---> y
+        |                                           |           |                |            ^
+        |                  A      B            C  + v     D   - v   E            |            |
+  x --->o--->[ m0 ]--->(+)--->(+)--->[ 1 / s ]---->(+)--->o--->(+)-------------->o--->[ m3 ]---
+                      + ^      ^ -                        |                      |
+                        |      |                          |                      |
+                        |      ----------------------------                      |
+                        | G                                                      |
+                        ------------------------[ k ]-----------------------------
+
+  LP ->  m0 = 1        HP ->  m0 = 0        BP ->  m0 = 1
+         m1 = 0               m1 = 1               m1 = 0
+         m2 = 1               m2 = 0               m2 = 0
+         m3 = 0               m3 = 1               m3 = 1
+
+  This diagram will be further referred to as "main block diagram".
 
 
+################################################################
+Getting the transfer function
+################################################################
+
+//  Steps
+
+  https://www.desmos.com/calculator/jk3y9a4hrd
+
+  (Letters x, y, A, B, C, D, E, F refer to the main block diagram.)
 
 
+//  Result
+
+            m1 * m3 * s^2  +  m0 * m3 * s  +  m0 * m2
+  H(s)  =  -------------------------------------------
+                   s^2  +  (2 - k) * s  +  1
 
 
+//  Bode plot
+
+  https://www.desmos.com/calculator/fdepxmawtq
 
 
+################################################################
+Time discretisation
+################################################################
 
+//  Transposed multimode 1-pole filter
+////  Replacing the integrator with a trapezoidal integrator
+
+  m1 * x -------------------------------------------
+                                                   |
+                               v1            C     v +
+  A -->(+)-->[ wc * Ts / 2 ]-->o---->(+)---->o--->(+)--->o--> D
+        ^ -                    |      ^ +    |           |
+        |                      |      |      |           |
+        |                      |  [ z^-1 ]   |           |
+        |                      |      ^      |           |
+        |                      |      | z1   |           |
+        |                      ----->(+)<-----           |
+        |                           +   +                |
+        --------------------------------------------------
+
+  A, C and D refer to the main block diagram.
+  This structure will be further referred to as "MM1".
+
+  g = wc * Ts / 2
+  
+  D  =  (A - D) * g  +  z1  +  m1 * x  =  g * A  -  g * D  +  z1  +  m1 * x
+  D * (1 + g)  =  g * A  +  z1  +  m1 * x
+  D  =  (g * A) / (1 + g)  +  (z1  +  m1 * x) / (1 + g)          //  I will need this expression to find G (the positive feedback)
+  
+  v1  =  (A - D) * g  =  g * (A  -  (g * A) / (1 + g)  -  (z1  +  m1 * x) / (1 + g)
+  v1  =  g * (A  +  g * A  -  g * A  -  z1  -  m1 * x) / (1 + g)  =  ( g / (1 + g) )  *  (A  -  z1  -  m1 * x)
+
+  gLP  =  g / (1 + g)   =>   v1  =  gLP  *  (A  -  z1  -  m1 * x)
+  
+  C  =  v1 + z1
+
+  z1 =  C + v1
+  
+  D  =  C  +  m1 * x
+
+
+//  "Regular" multimode 1-pole filter
+////  Replacing the integrator with a trapezoidal integrator
+
+                    v2
+        -------(+)<-----o<--[ g ]<--
+        |       ^ +     |          |
+        |       |       |          |
+        |    [ z^-1 ]   |          |
+        |       ^       |          |
+        v       | z2    |          |
+      F o----->(+)<------          |
+        |    +     +               |
+        v -                        |
+  D -->(+)------------------------>o--> E
+
+  D, E and F refer to the main block diagram.
+  This structure will be further referred to as "MM2".
+
+  F  =  (D - F) * g  +  z2  =  g * D  -  g * F  +  z2
+  F * (1 + g)  =  g * D  +  z2
+  F  =  (g * D  +  z2) / (1 + g)
+
+  E  =  D - F  =  D - (g * D  +  z2) / (1 + g)  =  (D  +  g * D  -  g * D  -  z2)  *  1 / (1 + g)
+  E  =  (D - z2)  *  1 / (1 + g)
+  
+  gHP  =  1 / (1 + g)   =>   E  =  gHP * (D - z2)
+
+  v2 =  g * E
+  
+  F  =  v2 + z2
+
+  z2 =  F + v2
+
+
+//  Main block diagram simplified
+
+                                   F ---->[ m2 ]---
+                                     |            |
+                    A          D     |          + v
+  x -->[ m0 ]-->(+)--->[ MM1 ]--->[ MM2 ]        (+)--> y
+                 ^ +                 |          + ^
+               G |                   v E          |
+                 -------[ k ]--------o--->[ m3 ]---
+
+  Now I need G (the positive feedback).
+  ////  Steps & results:
+  https://www.desmos.com/calculator/zqjf1whzip
+
+
+//  FULL (mono) ALGORITHM
+////  I'm sticking to 3 states: LP, HP and BP.
+////  But simple arithmetics could provide Notch (BR = in - BP) or all-pass (APa = LP - HP  ;  APb = HP - LP)
+////  Even shelving filters could be achievable, but in order to implement them properly, you'd need to rescale
+////  the cutoff according to the shelving gain... which is not complicated but out of topic.
+////
+////  In what follows, I'm assuming the variables lp, hp and bp are known (they respectively correspond to the
+////  amount of... do I need to write it down?)
+////  If you're very lazy but still want to implement my algorithm, there's an example of how to get them in the
+////  Desmos link to the Bode plot.
+////  I'll paste it here so you don't have to scroll:
+////  https://www.desmos.com/calculator/fdepxmawtq
+////  ("S" is the slider, the formulae you're looking for are in the "SVF" folder.)
+
+@init
+
+  PI_SRATE  =  M_PI / sRate;      //  M_PI is the number pi, sRate is the sampling frequency (in Hz i.e. samples per second)
+
+
+@slider
+  
+  k  =  reso * 1.99;              //  The (linear) filter explodes at k = 2 (see Desmos links).
+  
+  g     =  aTan (PI_SRATE * Hz);   //  Hz is the cutoff frequency (in Hz)
+  tmp1  =  1 + g;
+  gHp   =  1 / tmp1;
+  gLP   =  g * gHP;
+
+  fbG2  =  k * tmp1;
+  fbG1  =  k;
+  fbG0  =  k * g;
+
+  tmp1  =  tmp1 * tmp1;
+  fbDen =  1 / (tmp1 - fbG0);
+
+
+@sample
+
+  //  Mixing inputs
+  xLP  =  in * m0;
+  xHP  =  in * m1;
+
+  //  Avoiding one useless addition
+  tmp1 =  xHP + z1;
+
+  //  Getting feddback
+  fb   =  fbG0 * xLP  +  fbG1 * tmp1  -  fbG2 * z2;
+  fb  *=  fbDen;
+
+  //  Adding feedback
+  xLP -=  fb;
+
+  //  MM1
+  tmp1 =  gLP * (xLP - tmp1);
+  tmp2 =  tmp1 + z1
+  z1   =  tmp2 + tmp1;
+  out  =  tmp2 + xHP;
+
+  //  MM2
+  yHP  =  gHP * (out - z2)
+  tmp1 =  yHP * g;
+  yLP  =  tmp1 + z2;
+  z2   =  yLP + tmp1;
+
+  //  Mixing outputs
+  out  =  m2 * yLP  +  m3 * yHP;
+
+/*
+  Then just add some non-linearities where you see fit.
+  If you don't already have a favourite waveshaper you can choose one from:
+  https://en.wikipedia.org/wiki/Sigmoid_function
+  
+  Just remember ONE important thing: for the filter to remain stable: f(x) has to be <= x.
+  (Assuming f(x) is a waveshaper and x is anywhere in the feedback path. If you saturate the input or output outside
+  of the filter, then you don't care.)
+
+  If you choose arctan x, and would rather have the asymptote being y = sign (x) (instead of y = +/- pi / 2), just multiply
+  the output by 2 / pi (it's a constant, so be clever: compute it @init).
+
+  Hope I've helped. Please don't sell my work.
+*/
