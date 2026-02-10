@@ -229,8 +229,8 @@ Time discretisation
   gLP   =  g * gHP;
 
   //  Feedback variables
-  k  =  reso * 1.99;              //  The (linear) filter explodes at k = 2 (see Desmos links).
-                                  //  Assuming slider "reso" ranges from 0 to 1 here.
+  k  =  res * 1.99;                //  The (linear) filter explodes at k = 2 (see Desmos links).
+                                   //  Assuming slider "res" ranges from 0 to 1 here.
   fbG2  =  k * tmp1;
   fbG1  =  k;
   fbG0  =  k * g;
