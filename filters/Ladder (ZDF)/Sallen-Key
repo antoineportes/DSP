@@ -178,6 +178,27 @@ Time discretisation
   Now I need G (the positive feedback).
   ////  Steps & results:
   https://www.desmos.com/calculator/zqjf1whzip
+  
+  Ok. Now I'd like to find a way to normalise the BP.
+  Without resonance, it's equivalent to a 2-pole SVF BP with damping factor R = 1.
+  Q  =  1 / 2R  =  1 / 2  ~=  -6.02... dB. That's low... like 6.02 dB too low...
+  On the other hand, the more resonance the less normalisation is needed: i.e. for high values of k, the
+  resonance peak is pretty much equivalent for all three states.
+
+  Instead of diving into hardcore math that would give me a headache and end up with some CPU-killing formula,
+  I chose the empirical method: I knew that "norm" should range from 1 to 2, be = 1 when bp = 0 or k = 2 or both
+  and be === 2 only when bp = 1 and and k = 0.
+
+  The 2 obvious options were 2 ^ n and 1 + n (with 0 < n < 1). The starting point for n is bp * (1 - res) [0 < res < 1].
+  Then I could use sqr(n) or sqRt(n) or just n. So 6 options. Only 1 of which never raised the pass-band over 0 dB when
+  varying state AND never fell below 0 dB when modifying the resonance in full BP mode.
+  So I kept   norm  =  1 + (bp * (1 - res)) ^ 2.
+
+  I could have tried more solutions (n  =  sqRt (bp) * sqr (1 - res) or any similar combination) if my initial guess hadn't
+  provided a satisfying result. And if the empirical approach had failed, I still could have written an equation comparing
+  Hbp(s = 1) with Hlp(s = 0) and Hhp(s = +inf) or found the maxima of |Hbp(jw)|², |Hlp(jw)|² and |Hhp(jw)|² and introduce
+  some factor that make them always equal... That's a bit much for a task as trivial as normalising a BPF but I'm trying to
+  make an (off-topic) point: the only time when there's no solution is the time when you give up.
 
 
 //  FULL (mono) ALGORITHM
