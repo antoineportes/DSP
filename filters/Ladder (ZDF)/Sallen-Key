@@ -199,7 +199,7 @@ Time discretisation
 
   I could have tried more solutions (n  =  sqRt (bp) * sqr (1 - res) or any similar combination) if my initial guess hadn't
   provided a satisfying result. And if the empirical approach had failed, I still could have written an equation comparing
-  Hbp(s = 1) with Hlp(s = 0) and Hhp(s = +inf) or found the maxima of |Hbp(jw)|², |Hlp(jw)|² and |Hhp(jw)|² and introduce
+  Hbp(s = j) with Hlp(s = 0) and Hhp(s = +inf) or found the maxima of |Hbp(jw)|², |Hlp(jw)|² and |Hhp(jw)|² and introduce
   some factor that make them always equal... That's a bit much for a task as trivial as normalising a BPF but I'm trying to
   make an (off-topic) point: the only time when there's no solution is the time when you give up.
 
