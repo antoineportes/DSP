@@ -190,7 +190,7 @@ Time discretisation
 
   Instead of diving into hardcore math that would give me a headache and end up with some CPU-killing formula,
   I chose the empirical method: I knew that "norm" should range from 1 to 2, be = 1 when bp = 0 or k = 2 or both
-  and be === 2 only when bp = 1 and and k = 0.
+  and be === 2 only when bp = 1 and k = 0.
 
   The 2 obvious options were 2 ^ n and 1 + n (with 0 < n < 1). The starting point for n is bp * (1 - res) [0 < res < 1].
   Then I could use sqr(n) or sqRt(n) or just n. So 6 options. Only 1 of which never raised the pass-band over 0 dB when
