@@ -49,7 +49,7 @@
   Luckily, I found this formula:    https://github.com/antoineportes/DSP/blob/main/filters/Damping%20factors%20in%20Butterworth%20cascades
   which works with fractional N:    https://www.desmos.com/calculator/qiaxwl94ug
   Then R[i] are no longer unknown, and knowing that the final gain at cutoff is:    resonance * 2^-0.5
-  or |H(jw)|²  =  rsonance^2 / 2  when  w = wc = 1
+  or |H(jw)|²  =  resonance^2 / 2  when  w = wc = 1
   I can solve for g1 or g2 using the identity:
 
   g1 = sqRt( 1 - g2^2 )    or    g2 = sqRt( 1 - g1^2 )
