@@ -107,7 +107,7 @@
 
   Multiplying the cutoff by some factor will only shift the curve left or right without modifying the pass-band amplitude.
   Normalising the overall amplitude by some factor happens outside of the transfer function and thus won't affect the frequency response (apart from 
-  shifting the amplitude up or down)
+  shifting the amplitude up or down).
   This means than the two parameters I need are independant from one another even though they both rely on k.
 
 
