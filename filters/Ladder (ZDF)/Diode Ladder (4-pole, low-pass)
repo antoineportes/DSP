@@ -54,7 +54,7 @@
   So maybe getting rid of the three halving gains and replacing 1 / s by 1 / (2 * s) in the corresponding integrators would better fit the analog
   models (that would mean replacing wcT/2 by wcT/4 in the digital implementation but I'm not there yet).
 
-  I took the liberty of moving one halving gain from the end to the beining (applied to A + y2 instead of y3) because it didn't affect the whole transfer
+  I took the liberty of moving one halving gain from the end to the begining (applied to A + y2 instead of y3) because it didn't affect the whole transfer
   function. Now it does, so let's stupidly follow the schematics.
 
 ////  New block diagram
