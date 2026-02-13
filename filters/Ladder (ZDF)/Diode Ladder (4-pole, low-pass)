@@ -134,10 +134,10 @@
 
   [1] Well in theory s = j * w and we assume wc = 1. Then there are 2 steps to retrieve H(jw): s -> s / wc then s -> j * w (forgive me for taking a shortcut).
   
-  So I'm looking for c that satisfies:
+  So I'm looking for _c = 1 / c that satisfies:
   
-  |H(j / c)|  =  sqRt (1 / 8)    or more conveniently:  |H(j / c)| ^ -2  =  8          //  (That just means only evaluating the denominator and ignoring the
-                                                                                       //  square root from the complex absolute value formula.)
+  |H(j * _c)|  =  sqRt (1 / 8)    or more conveniently:  |H(j * _c)| ^ -2  =  8          //  (That just means only evaluating the denominator and ignoring the
+                                                                                         //  square root from the complex absolute value formula.)
 
 
 
