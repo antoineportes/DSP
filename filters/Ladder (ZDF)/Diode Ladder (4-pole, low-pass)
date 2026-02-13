@@ -22,7 +22,7 @@
   
   https://www.desmos.com/calculator/eenls3dri8
 
-  (After 3 failed attempts, I realised that the letters on the diagram weren't helping.)
+  (After 3 failed attempts, I realised that the letters on the diagram weren't helping — apart maybe from A.)
 
 ////  Result:
 
@@ -53,6 +53,28 @@
   negative feedback from the output...  (x / 2) - y  !=  (x - y) / 2
   So maybe getting rid of the three halving gains and replacing 1 / s by 1 / (2 * s) in the corresponding integrators would better fit the analog
   models (that would mean replacing wcT/2 by wcT/4 in the digital implementation but I'm not there yet).
+
+////  New block diagram
+
+           A                                y1                               y2                                 y3       
+  x -->(+)--->(+)-->(+)-->[ 1 / (2 * s) ]-->o-->(+)-->(+)-->[ 1 / (2 *s) ]-->o-->(+)-->(+)--->[ 1 / (2 * s) ]-->o-->(+)--->[ 1 / s ]-->o--> y4
+        ^ -    ^ +   ^ -                    |    ^ +   ^ -                   |    ^ +   ^ -                     |    ^ -               |
+        |      |     |                      |    |     |                     |    |     |                       |    |                 |
+        |      |     ------------------------    |     |                     |    |     |                       |    |                 |
+        |      | (y2)                            |     |                     |    |     |                       |    |                 |
+        |      ----------------------------------|-----o<---------------------    |     |                       |    |                 |
+        |                                        | (y3)                           |     |                       |    |                 |
+        |                                        ---------------------------------|-----o<-----------------------    |                 |
+        |  (main feedback)                                                        | (y4)                             |                 |
+        -----------------------[ k ]<---------------------------------------------o<---------------------------------o<-----------------
+
+  ////  New transfer function
+  //////  LP with half cutoff:
+
+  y   =   (x - y) / 2s
+  y * 2s  =  x - y
+  y * (2s + 1)  =  x
+  y / x  =  1 / (2s + 1)
 
 
 
