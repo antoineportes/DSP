@@ -54,31 +54,64 @@
   So maybe getting rid of the three halving gains and replacing 1 / s by 1 / (2 * s) in the corresponding integrators would better fit the analog
   models (that would mean replacing wcT/2 by wcT/4 in the digital implementation but I'm not there yet).
 
+  I took the liberty of moving one halving gain from the end to the beining (applied to A + y2 instead of y3) because it didn't affect the whole transfer
+  function. Now it does, so let's stupidly follow the schematics.
+
 ////  New block diagram
+////  SPOILER: failure.
 
-           A                                y1                               y2                                 y3       
-  x -->(+)--->(+)-->(+)-->[ 1 / (2 * s) ]-->o-->(+)-->(+)-->[ 1 / (2 *s) ]-->o-->(+)-->(+)--->[ 1 / (2 * s) ]-->o-->(+)--->[ 1 / s ]-->o--> y4
-        ^ -    ^ +   ^ -                    |    ^ +   ^ -                   |    ^ +   ^ -                     |    ^ -               |
-        |      |     |                      |    |     |                     |    |     |                       |    |                 |
-        |      |     ------------------------    |     |                     |    |     |                       |    |                 |
-        |      | (y2)                            |     |                     |    |     |                       |    |                 |
-        |      ----------------------------------|-----o<---------------------    |     |                       |    |                 |
-        |                                        | (y3)                           |     |                       |    |                 |
-        |                                        ---------------------------------|-----o<-----------------------    |                 |
-        |  (main feedback)                                                        | (y4)                             |                 |
-        -----------------------[ k ]<---------------------------------------------o<---------------------------------o<-----------------
+           A                           y1                           y2                            y3       
+  x -->(+)--->(+)-->(+)-->[ 1 / s) ]-->o-->(+)-->(+)-->[ 1 / 2s ]-->o-->(+)-->(+)--->[ 1 / 2s ]-->o-->(+)--->[ 1 / 2s ]-->o--> y4
+        ^ -    ^ +   ^ -               |    ^ +   ^ -               |    ^ +   ^ -                |    ^ -               |
+        |      |     |                 |    |     |                 |    |     |                  |    |                 |
+        |      |     -------------------    |     |                 |    |     |                  |    |                 |
+        |      | (y2)                       |     |                 |    |     |                  |    |                 |
+        |      -----------------------------|-----o<-----------------    |     |                  |    |                 |
+        |                                   | (y3)                       |     |                  |    |                 |
+        |                                   -----------------------------|-----o<------------------    |                 |
+        |  (main feedback)                                               | (y4)                        |                 |
+        -----------------------[ k ]<------------------------------------o<----------------------------o<-----------------
 
-  ////  New transfer function
-  //////  LP with half cutoff:
+////  New transfer function
+//////  LP with half cutoff:
 
   y   =   (x - y) / 2s
   y * 2s  =  x - y
   y * (2s + 1)  =  x
   y / x  =  1 / (2s + 1)
 
+//////  Steps:
+
+  https://www.desmos.com/calculator/wi2wid6cah
+
+//////  Result:
+
+                                     1
+  H(s)  =  --------------------------------------------------------
+            4 * s^4  +  14 * s^3  +  8 * s^2  -  3 * s  -  1  -  k
+
+//////  Bode plot:
+
+  https://www.desmos.com/calculator/j4pup7mbh0
+
+  Ok, so, nope.
+
+  Vadim's prototype it is!
+  Two things I'like to change:
+    1) When there's no (or little) resonance the amplitude at the cutoff frequency is ridiculously low. The shape of the curve is nice but it looks
+      shifted far left. Offseting the cutoff to compensate should do it, but as soon as there is resonance, I don't wanna offset the resonance peak.
+      So what I need is a factor for the cutoff that's inversely proportional to k.
+    2) When there is resonance, the pass-band attenuation is pretty insane (worse than with a non-normalised transistor ladder. I need to find the
+      amplitude of the pass-band and multiply the input or the output by its inverse. With non-linearities involved, normalising the output means
+      less distortion... I'll obviously normalise the input.
+
+  Multiplying the cutoff by some factor will only shift the curve left or right without modifying the pass-band amplitude.
+  Normalising the overall amplitude by some factor happens outside of the transfer function and thus won't affect the frequency response (apart from 
+  shifting the amplitude up or down)
+  This means than the two parameters I need are independant from one another even though they both rely on k.
 
 
-//// Parallel branch...
+//// Cutoff offset
 
   The Roland TB-303 VCF was described by the manufacturer as a 3-pole 18 dB / oct filter. While the schematics clearly show 4 capacitors in parallel,
   so 4 low-pass RC circuits, 1 4-pole filter.
