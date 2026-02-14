@@ -3,3 +3,50 @@
 ################################################################
 
 //  Full block diagram
+
+        ---------o<------------------
+        |        |                  |
+        |      - v  H               |
+        |       (+)--->[ 1 / s ]--->o--> y4
+        |      + ^                  |
+        |        |             G    v -
+        |        o<----------------(+)
+        |        |                  ^ +
+        |      - v  F               |
+      [ k ]     (+)--->[ 1 / s ]--->o--> y3
+        |      + ^                  |
+        |        |             E    v -
+        |        o<----------------(+)
+        |        |                  ^ +
+        |      - v  D               |
+        |       (+)--->[ 1 / s ]--->o--> y2
+        |      + ^                  |
+        |        |             C    v -
+        |        o<----------------(+)
+        |        |                  ^ +
+      - v   A  - v  B               |
+  x -->(+)----->(+)--->[ 2 / s ]--->o--> y1
+
+//// How I built this diagram
+
+  It's based upon two sources:
+    1) Vadim Zavalishin "The Art of VA filter design" v. 2.1.2 p202
+    2) Schematics of the Roland TB-303 VCF
+
+  I've ignored the non-linearities in Vadim's block diagram, then added some modifications to have it better reflect the (ideal) analog model.
+  First it's upside-down (input at the bottomn output at the top) because all schematics I've found display the ladder this way.
+  Then I understood the reason to the halving gains (in the book): most Diode ladder VCFs have 4 capacitors in parallel.
+  The 2nd, 3rd and 4th ones have equal capacitance and the first one has approximately half this capacitance.
+  The cutoff frequency of a 1-pole RC circuit is wc (Hz) = 1 / (2 * pi * R * C), so doubling C is halving the cutoff.
+  The cutoff gain can (mathematically) be extracted of the integrator. Which is what Vadim did by adding gains of 1 / 2 before integrators 2 to 4.
+  By doing so he also decided that the reference-cutoff was the one of the first filter in the cascade.  This makes sense for high values of k,
+  since this frequency is the closest to the resonance peak, but with k -> 0 the curve of the amplitude response looks shifted to the left.
+  So no matter which reference you choose, the overall cutoff has to be rescaled according to k.
+  Just for fun, I chose to go the other way around: use LP 2, 3 & 4 as reference and double the cutoff in LP 1.
+
+
+//  Transfer function
+
+
+
+
