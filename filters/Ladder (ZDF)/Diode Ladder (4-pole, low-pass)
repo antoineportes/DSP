@@ -109,7 +109,26 @@
   Done!
 
 
+////  Normalising the cutoff
 
+  Ok, so.
+  Since the numerator of the transfer function is 1, I'll ignore it and use H(s)^1 to simplify the math.
+  
+  H(s)^1  =  0.5 * s^4  +  4 * s^3  +  10 * s^2  +  8 * s  +  1  +  k
+
+  Then, the amplitude response is 1 / |H(s)^1|. But the absolute value of a complex number is wrapped inside a gigantic square root, which I can simply
+  ignore by evaluating |H(s)|^-2. I'm also assuming unit cutoff: what I'm looknig for here will not rely on the cutoff frequency (quite the opposite actually).
+
+  |H(jw)|^-1  =  j*j*j*j * 0.5 * w^4  +  j*j*j * 4 * w^3  +  j*j * 10 * w^2  +  j * 8 *s  +  1  +  k          //  j*j = -1  ;  j*j*j = -j  ;  j*j*j*j = 1
+              =  ( 0.5 * w^4  -  10 * w^2  +  1  +  k)  +  j * ( 8 * w  -  4 * w^3 )
+
+  |H(jw)|^-2  =  ( 0.5 * w^4  -  10 * w^2  +  1  +  k) ^ 2  +  ( 8 * w  -  4 * w^3 ) ^ 2
+              =  0.25 * w^8  +  6 * w^6  +  (k + 37) * w^4  -  (20 * k - 44) * w^2  +  k^2  +  2 * k  +  1
+
+  It's a 4th order polynomial whose variable is w^2 and whose coefficients are:
+  a = 0.25    ;    b = 6    ;    c = k + 37    ;    d = -20 * k + 44    ;    e = k^2  +  2 * k  +  1
+
+  To simplify even further, let's define:  f(x)  =  a * x^4  +  b * x^3  +  c * x^2  +  d * x  +  e
 
 
 
