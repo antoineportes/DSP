@@ -35,7 +35,7 @@
 
   I've ignored the non-linearities in Vadim's block diagram, then added some modifications to have it better reflect the (ideal) analog model.
   First it's upside-down (input at the bottomn output at the top) because all schematics I've found display the ladder this way.
-  Then I understood the reason to the halving gains (in the book): most Diode ladder VCFs have 4 capacitors in parallel.
+  Then I understood the reason for the halving gains (in the book): most Diode ladder VCFs have 4 capacitors in parallel.
   The 2nd, 3rd and 4th ones have equal capacitance and the first one has approximately half this capacitance.
   The cutoff frequency of a 1-pole RC circuit is wc (Hz) = 1 / (2 * pi * R * C), so doubling C is halving the cutoff.
   The cutoff gain can (mathematically) be extracted of the integrator. Which is what Vadim did by adding gains of 1 / 2 before integrators 2 to 4.
