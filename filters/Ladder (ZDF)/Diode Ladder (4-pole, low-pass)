@@ -34,7 +34,7 @@
     2) Schematics of the Roland TB-303 VCF
 
   I've ignored the non-linearities in Vadim's block diagram, then added some modifications to have it better reflect the (ideal) analog model.
-  First it's upside-down (input at the bottomn output at the top) because all schematics I've found display the ladder this way.
+  First it's upside-down (input at the bottom output at the top) because all schematics I've found display the ladder this way.
   Then I understood the reason for the halving gains (in the book): most Diode ladder VCFs have 4 capacitors in parallel.
   The 2nd, 3rd and 4th ones have equal capacitance and the first one has approximately half this capacitance.
   The cutoff frequency of a 1-pole RC circuit is wc (Hz) = 1 / (2 * pi * R * C), so doubling C is halving the cutoff.
@@ -79,6 +79,37 @@
 //  Bode plot
 
   https://www.desmos.com/calculator/uhsiwvfkgw
+
+
+//  Further tweaking
+
+  Two things I'like to change:
+    1) When there's no (or little) resonance the amplitude at the cutoff frequency is ridiculously low (~= -20 dB). The shape of the curve is nice but
+      it looks shifted far left. Offseting the cutoff to compensate should do it, but as soon as there is resonance, I don't want the peak frequency to
+      exceed wc. So what I need is a factor for the cutoff that's inversely proportional to k.
+    2) When there is resonance, the pass-band attenuation is pretty insane (worse than with a non-normalised transistor ladder)[2]. I need to find the
+      amplitude of the pass-band and multiply the input or the output by its inverse. With non-linearities involved, normalising the output means
+      less distortion... I'll obviously normalise the input.
+
+  Multiplying the cutoff by some factor will only shift the curve left or right without modifying the pass-band amplitude.
+  Normalising the overall amplitude by some factor happens outside of the transfer function and thus won't affect the frequency response (apart from 
+  shifting the amplitude up or down).
+  This means than the two parameters I need are independant from one another even though they both rely on k.
+
+////  Normalising the pass-band
+
+  Let's start by getting rid of the easy one.
+  It's a low-pass, so the pass-band amplitude is the amplitude when w -> 0.
+
+  w = 0  =>  j * w / wc = 0  =>  s = 0
+
+  H(0) = 1 / (1 + k)    ;    abs (1 / (1 + k)  =  sqRt ( sqr ( 1 / (1 + k) ) )  =  1 / (1 + k)
+  norm  =  1 / ( 1 / (1 + k) )  =  1 + k
+
+  Done!
+
+
+
 
 
 
