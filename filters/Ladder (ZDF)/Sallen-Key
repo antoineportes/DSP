@@ -57,7 +57,7 @@ Building the analog block diagram
                         |      |                          |                      |
                         |      ----------------------------                      |
                         | G                                                      |
-                        ------------------------[ k ]-----------------------------
+                        ------------------------[ k ]<----------------------------
 
   LP ->  m0 = 1        HP ->  m0 = 0        BP ->  m0 = 1        //    0 - 1 - 1 - 0 also gives a BP, only with HP first.
          m1 = 0               m1 = 1               m1 = 0        //    With non-linearities involved, it should sound different.
