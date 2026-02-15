@@ -25,7 +25,7 @@
     Q is convenient because it's equal to the gain / magnitude / amplitude at the cutoff frequency, and because there seems
     to be a consensus regarding its name.
 
-  Then there's this other variable  =  1 / 2 * Q.
+  Then there's this other variable  =  1 / (2 * Q).
     This one is convenient because it avoids writing a fraction in the denominator of a bigger fraction and because it's present
     on block diagrams.
 
