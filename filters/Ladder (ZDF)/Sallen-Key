@@ -176,7 +176,7 @@ Time discretisation
   x -->[ m0 ]-->(+)--->[ MM1 ]--->[ MM2 ]        (+)--> y
                  ^ +                 |          + ^
                G |                   v E          |
-                 -------[ k ]--------o--->[ m3 ]---
+                 -------[ k ]<-------o--->[ m3 ]---
 
   Now I need G (the positive feedback).
   ////  Steps & results:
