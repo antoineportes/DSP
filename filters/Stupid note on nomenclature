@@ -1,0 +1,46 @@
+################################################################
+                          My 2 cents
+################################################################
+
+//  Biquad filters
+
+  Biquad is short for biquadratic. It refers to the fact that the transfer function's denominator is a quadratic formula
+  which is another name for "second order polynomial".
+
+  So really, biquad only means 2nd-order filter.
+  It says nothing on the topology. It can use classical BLT, trapezoidal integration, DF1, DF2, TDF1, TDF2...
+  It can even be analog.
+
+  So please, whoever happens to read this, stop saying stuff like "biquad vs. ZDF" etc.
+  Thanks.
+
+
+//  Damping
+
+  Biquad filters usually have an adjustable resonance.
+  There are several variables commonly used to implement this resonance.
+
+  The quality factor:
+    Everyone seems to agree on calling it Q (for "Quality" I suppose...).
+    Q is convenient because it's equal to the gain / magnitude / amplitude at the cutoff frequency, and because there seems
+    to be a consensus regarding its name.
+
+  Then there's this other variable  =  1 / 2 * Q.
+    This one is convenient because it avoids writing a fraction in the denominator of a bigger fraction and because it's present
+    on block diagrams.
+
+    But what makes it really not convenient is that no one agrees on how to call it.
+    Sometimes it's called R, sometimes it's half the parameter k, sometimes it's the Greek letter zeta...
+    We don't even know if it's the Damping factor or the Damping ratio...
+
+    Ratio makes sense because it's inversely proportional to the resonance. Factor makes sense because it's used as a factor in
+    block diagrams and transfer functions.
+    No way to choose here, but we can all agree on "Damping".
+
+    I guess "R" is for "Ratio" (perhaps "Resonance"?) but I think it creates confusion with "R" as in "RC circuit" (i.e. Resistance)
+    which is not quite unrelated to filters. (Also in stereo DSP, "R" often means "right channel".)
+    k is a common name for a constant in an equation, but I believe that this is precisely a good reason to leave it available...
+    Zeta is elegant. Until you start coding...
+
+  Ok. Now that I've established that there are too many different terminologies, let me introduce some more confusion by stating:
+    From now on, I'll call it "D" for "Damping". You may keep calling it as you please. (I like Suzan for instance.)
