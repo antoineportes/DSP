@@ -17,6 +17,18 @@
 
 //  Damping
 
+             yHP             yBP
+             ^               ^
+             |               |
+  x -->(+)-->o-->[ 1 / s ]-->o-->[ 1 / s ]-->o--> yLP
+        ^ -                  |               |
+        |                    v               |
+        |                 [ ??? ]            |
+        |                    |               |
+        |                    v +             |
+        --------------------(+)<--------------
+                                 +
+
   Biquad filters usually have an adjustable resonance.
   There are several variables commonly used to implement this resonance.
 
