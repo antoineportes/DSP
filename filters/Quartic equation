@@ -1,0 +1,46 @@
+################################################################
+               ROOTS OF A QUARTIC POLYNOMIAL
+################################################################
+
+/*
+  I had to solve a quartic formula to normalise my Diode ladder LP filter.
+  It's been some journey.
+  I found some explanations about the logic behind the formulae, reproduced it, failed, stopped having fun.
+  Then I found a close formula on Wikipedia. I knew the approximation of the root I was looking for (having spotted it graphicaly),
+  and Wikipedia's formula gave wrong results.
+  Then I asked Wolfram to solve my polynomial. I recognised my root, but it had only 7 digits and I had to pay for exact value...
+
+  So I asked Wolfram to solve:  a * x^4  +  b * x^3  +  c * x^2  +  d * x  +  e  =  0 ...
+
+  Wolfram nicely gave me its formula!
+  I copied it in plain text and looked for repeating patterns to simplify it.
+
+  I ended up with an algorithm in pseudo-code which only takes half my screen instead of 4 times my screen.
+
+  It's not the kind of stuff anyone needs everyday, but if it happens to happen, there would be no reason to go through such trouble again.
+*/
+
+
+//  So let's say you have a formula in the form:  a * x^4  +  b * x^3  +  c * x^2  +  d * x  +  e  =  0
+////  This equation has 4 solutions (r1, r2, r3, r4  —  "r" as in "root").
+////  Some might be complex.
+////  Here's how to get them:
+
+cbrt2   = cbrt (2)
+t01     = -72 * a * c * e  +  27 * a * d^2  +  27 * b^2 * e  -  9 * b * c * d  +  2 * c^3
+t02     = 12 * a * e  -  3 * b * d  +  c^2
+t03     = cbrt ( sqrt ( t01^2  -  4 * t02^ 3 )  +  t1 )
+t04     = b^2  /  (2 * a^2) 
+t05     = t04 / 2
+t06     = t03  /  (3 * cbrt2 * a)
+t07     = (cbrt2 * t02)  /  (3 * a * t03)
+t08     = (2 * c)  /  (3 * a)
+t09     = 2 * t08
+t10     = sqrt (t05 + t06 + t07 - t08)  /  2
+t11     = sqrt (  t4  +  ( -b^3 / a^3  +  (4 * b * c) / a^2  -  (8 * d) / a )  /  ( 4 * t10 )  -  t06  -  t07  -  t09  )  /  2
+t12     = -b / (4 * a)
+
+r1  :=   -t10 -  t11  +  t12
+r2  :=   -t10 +  t11  +  t12
+r3  :=   t10  -  t11  +  t12
+r4  :=   t10  +  t11  +  t12
