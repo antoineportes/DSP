@@ -29,7 +29,7 @@
 cbrt2   = cbrt (2)
 t01     = -72 * a * c * e  +  27 * a * d^2  +  27 * b^2 * e  -  9 * b * c * d  +  2 * c^3
 t02     = 12 * a * e  -  3 * b * d  +  c^2
-t03     = cbrt ( sqrt ( t01^2  -  4 * t02^ 3 )  +  t1 )
+t03     = cbrt ( sqrt ( t01^2  -  4 * t02^ 3 )  +  t01 )
 t04     = b^2  /  (2 * a^2) 
 t05     = t04 / 2
 t06     = t03  /  (3 * cbrt2 * a)
