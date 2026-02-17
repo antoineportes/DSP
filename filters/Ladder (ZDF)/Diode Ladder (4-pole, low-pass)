@@ -176,7 +176,7 @@
 
   Enough is a sub-domain of too much.
 
-  (See ANNEXE, at the end, for details on how I got these values.)
+  (See ANNEXE 1, at the end, for details on how I got these values.)
 
 //////  Second case: k > 0
 
@@ -218,9 +218,11 @@
 
 //  Finding kMax
 
+(See ANNEXE 2 for more details)
+
 
 ======================================================================================================================================
-//  ANNEXE
+//  ANNEXE 1
 ======================================================================================================================================
 ////  Getting x and X (cutoff norm when k = 0)
 //////  Exact value of x:
@@ -304,3 +306,77 @@
   were probably fine (I also recognise  -a3 / 4  =  -6  in the expression...).
 
   Failure stinks when we let it have the final word.
+
+
+======================================================================================================================================
+//  ANNEXE 2
+======================================================================================================================================
+//  Why the left semiplane?
+////  Impulse response
+
+  https://www.desmos.com/calculator/i2qynwkvbm
+  https://en.wikipedia.org/wiki/Laplace_transform#Formal_definition
+  https://en.wikipedia.org/wiki/Transfer_function#Continuous-time
+
+  The poles of a filter are the roots of the denominator of its transfer function. (i.e. the values of s at which the denominator is = 0).
+  You often come across statements such as "a filter is stable if its poles are located at the left of the imaginary axis".
+  I'll try to explain why.
+
+  The variable s is used in the Laplace transform to map a function from the (real) time domain to the (complex) frequency domain.
+  s  =  sigma  +  j * omega
+  If the signal is a pure sinusoid, sigma = 0. We evaluate transfer functions on pure sinusoids, hence " s = j * w ".
+  But once the filter is dropped in the real world, sigma is back.
+  The formula of the Laplace transform is the integration over time of the original function multiplied by:
+
+  exp (-s * t)    where "t" is time (the real variable of the original time domain function).
+
+  s being a complex number, and t being a real positive number:   re (-s * t )  =  -re (s) * t
+  t being the time, it grows linearly ad infinitum.
+
+  Then if re (s) is positive, -re (s) is negative and re (-s * t) decays linearly ad infinitum.
+  And if re (s) is negative, -re (s) is positive and re (-s * t) grows linearly ad infinitum.
+
+  The rules of exponentiation (including Euler's fromula) state that:
+  exp (x + y)  =  exp (x) * exp (y)
+  exp (-x)  =  1 / exp (x)
+  exp (i * x)  =  cos (x) + i * sin (x)   ( i = sqrt (-1) )
+  The rules of trigonometry state that:
+  sin (-x)  =  -sin (x)
+  cos (-x)  =  cos (x)
+
+  By definition of a complex number,  s  =  re (s)  +  i * im (s)    ;    so  -s  =  -re (s)  -  i * im (s)          //  re (z) is the real part of z
+  so   -s * t  =  -re (s) * t  -  i * im (s) * t                                                                     //  im (z) is the imaginary part of z
+  so   exp (-s * t)  =  exp (-re (s) * t) * ( cos (-im (s) * t)  +  i * sin (-im (s) * t) )                          //  z is a complex number
+  =  ( cos (im (s) * t) - i * sin (im (s) * t) )  /  exp (re (s) * t)
+
+  cos (x) is bounded between -1 and 1. i * sin (x) is bounded between -i and i.
+  So re (s) alone determines the amplitude of the oscillations.
+
+  And if re (s) is positive,  cos (im (s) * t) / exp (re (s) * t) is an exponentially decaying sinusoid.
+  If re (s) is negative,  cos (im (s) * t) / exp (re (s) * t) is an exponentially growing sinusoid.
+
+  An exponentially growing sinusoid is what happens when a filter explodes, which is reflected by the division by zero
+  in the transfer function.
+
+
+////  Back to the poles
+
+  Let's consider a generic 1-pole transfer function:  H(s)  =  num / (a1 * s  +  a0)
+  H(s)  =  (num / a1) / (s  +  a0 / a1)
+  The pole p1  =  -a0 / a1
+  So H(s)  =  (num / a1) / (s - p1)
+
+  The inverse Laplace transform of H(s) gives  (num / a1) * exp (p1 * t)
+
+  Then if re (p1) is positive, the impulse response of H(s) is exponentially growing i.e. the filter explodes.
+
+  If re (p1) is negative, the impulse response of H(s) is exponentially decaying and the filter is stable.
+
+  Transfer functions of higher order can be expressed as a product of 1st order transfer functions (although this seems debatable...).
+  In such a product, one exponentially growing signal is sufficient to have the filter explode (which, again is reflected by the division
+  by zero in the transfer function).
+
+  This means:
+    1) If we want a stable filter, all poles must be located in the left complex semiplane ( re (pn) < 0 )
+    2) If we want an unstable filter, at least 1 of the poles must be located in the right complex semiplane ( re (pn) > 0 )
+    3) The limit-case is re (pn) = 0
