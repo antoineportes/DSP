@@ -86,15 +86,17 @@
   Two things I'like to change:
     1) When there's no (or little) resonance the amplitude at the cutoff frequency is ridiculously low (~= -20 dB). The shape of the curve is nice but
       it looks shifted far left. Offseting the cutoff to compensate should do it, but as soon as there is resonance, I don't want the peak frequency to
-      exceed wc. So what I need is a factor for the cutoff that's inversely proportional to k.
-    2) When there is resonance, the pass-band attenuation is pretty insane (worse than with a non-normalised transistor ladder)[2]. I need to find the
-      amplitude of the pass-band and multiply the input or the output by its inverse. With non-linearities involved, normalising the output means
-      less distortion... I'll obviously normalise the input.
+      exceed wc. So what I need is a factor for the cutoff that's inversely proportional to k.          //  Or more correctly: a factor that decreases 
+                                                                                                        //  when k increases.
+    2) When there is resonance, the pass-band attenuation is pretty insane (less than -24 dB when k is high). I need to find the amplitude of the pass-
+      band and multiply the input or the output by its inverse. With non-linearities involved, normalising the output means less distortion...
+      I'll obviously normalise the input.
 
   Multiplying the cutoff by some factor will only shift the curve left or right without modifying the pass-band amplitude.
   Normalising the overall amplitude by some factor happens outside of the transfer function and thus won't affect the frequency response (apart from 
   shifting the amplitude up or down).
-  This means than the two parameters I need are independant from one another even though they both rely on k.
+  This means that the two parameters I need are independant from one another even though they both rely on k.
+
 
 ////  Normalising the pass-band
 
@@ -103,35 +105,202 @@
 
   w = 0  =>  j * w / wc = 0  =>  s = 0
 
-  H(0) = 1 / (1 + k)    ;    abs (1 / (1 + k)  =  sqRt ( sqr ( 1 / (1 + k) ) )  =  1 / (1 + k)
-  norm  =  1 / ( 1 / (1 + k) )  =  1 + k
-
+  H(0) = 1 / (1 + k)    ;    abs (1 / (1 + k))  =  ( 1 / (1 + k) ) ^ (2 / 2)  =  1 / (1 + k)          //  Tons of extra-steps, I know. But I'm not really looking for k + 1.
+  norm  =  1 / ( 1 / (1 + k) )  =  1 + k                                                              //  I'm explaining what it means. I would have really enjoyed someone
+                                                                                                      //  doing the same for me a few years ago.
   Done!
 
 
 ////  Normalising the cutoff
 
   Ok, so.
-  Since the numerator of the transfer function is 1, I'll ignore it and use H(s)^1 to simplify the math.
+  Since the numerator of the transfer function is 1, I'll ignore it and use H(s)^-1 to simplify the math.
   
-  H(s)^1  =  0.5 * s^4  +  4 * s^3  +  10 * s^2  +  8 * s  +  1  +  k
+  H(s)^-1  =  0.5 * s^4  +  4 * s^3  +  10 * s^2  +  8 * s  +  1  +  k
 
   Then, the amplitude response is 1 / |H(s)^1|. But the absolute value of a complex number is wrapped inside a gigantic square root, which I can simply
-  ignore by evaluating |H(s)|^-2. I'm also assuming unit cutoff: what I'm looknig for here will not rely on the cutoff frequency (quite the opposite actually).
+  ignore by evaluating |H(s)|^-2. I'm also assuming unit cutoff: what I'm looking for here will not rely on the cutoff frequency (quite the opposite actually).
 
-  |H(jw)|^-1  =  j*j*j*j * 0.5 * w^4  +  j*j*j * 4 * w^3  +  j*j * 10 * w^2  +  j * 8 *s  +  1  +  k          //  j*j = -1  ;  j*j*j = -j  ;  j*j*j*j = 1
+  H(jw)^-1    =  j*j*j*j * 0.5 * w^4  +  j*j*j * 4 * w^3  +  j*j * 10 * w^2  +  j * 8 * w  +  1  +  k          //  j*j = -1  ;  j*j*j = -j  ;  j*j*j*j = 1
               =  ( 0.5 * w^4  -  10 * w^2  +  1  +  k)  +  j * ( 8 * w  -  4 * w^3 )
 
   |H(jw)|^-2  =  ( 0.5 * w^4  -  10 * w^2  +  1  +  k) ^ 2  +  ( 8 * w  -  4 * w^3 ) ^ 2
               =  0.25 * w^8  +  6 * w^6  +  (k + 37) * w^4  -  (20 * k - 44) * w^2  +  k^2  +  2 * k  +  1
 
   It's a 4th order polynomial whose variable is w^2 and whose coefficients are:
-  a = 0.25    ;    b = 6    ;    c = k + 37    ;    d = -20 * k + 44    ;    e = k^2  +  2 * k  +  1
+  a4 = 0.25    ;    a3 = 6    ;    a2 = k + 37    ;    a1 = -20 * k + 44    ;    a0 = k^2  +  2 * k  +  1
 
-  To simplify even further, let's define:  f(x)  =  a * x^4  +  b * x^3  +  c * x^2  +  d * x  +  e
+  To simplify even further, let's define:  f(x)  =  a4 * x^4  +  a3 * x^3  +  a2 * x^2  +  a1 * x  +  a0
+
+//////  First case: k = 0
+
+  The Roland TB-303 VCF was described by the manufacturer as a 3-pole 18 dB / oct. filter. While the schematics clearly show 4 capacitors in parallel,
+  so 4 low-pass RC circuits, i.e. one 4-pole LP filter.
+
+  There are several theories about the reason why. The most recurring being avoiding to infringe Moog's patent...
+  I find it very unlikely, for I sincerly hope that, in case of a court action, the investigation digs a bit deeper than user-facing product description.
+  
+  I have my own hypothesis — which is probably false but might serve the current purpose:
+  the slope takes so long to reach 24 dB / oct. that the area of interest is best averaged as 18 dB / oct., which indeed corresponds to order N = 3.
+
+  Ok, so let's say we want that behaviour.
+  (I'm temporarily ignoring the negative feedback, so until further notice: k = 0.) 
+  The most obvious solution (with which I will start) is to re-scale the cutoff gain so that the amplitude at the cutoff frequency is the same as with
+  three 1-pole LP in series:
+
+  |H(j)|     =  ( 1 / sqRt (2) ) ^ 3  =  2 ^ -3/2  =  1 / sqRt (8)
+  |H(j)|^-1  =  sqRt (8)    ;    |H(j)|^-2  =  8
+
+  Since s = j * w / wc [1], scaling the cutoff by a factor "X" ("k" is already taken... ) is equivalent to dividing s by X, indeed:    //  [1] Well in theory s = j * w and we assume wc = 1.
+  s'  =  j * w / (X * wc)   =>   s' * X  =  j * w / wc  =  s   =>   s'  =  s / X.                                                      //  Then there are 2 steps to retrieve H(jw):
+                                                                                                                                       //  s -> s / wc  then  s -> j * w
+  Assuming  w = wc = 1, then  H(s') = H(j / X)    ;    |H(j / X)|^-2  =  f(X ^ -2)                                                     //  (forgive me for taking a shortcut).
+  So I'm looking for   x  =  X ^ -2   that satisfies:
+  
+  f(x)  =  8
+  i.e.:
+  0.25 * x^4  +  6 * x^3   +   (k + 37) * x^2  +  (-20 * k + 44) * x  +  k^2 + 2 * k + 1 - 8  =  0
+
+  Assuming k = 0:
+
+  0.25 * x^4  +  6 * x^3   +   37 * x^2  +  44 * x  - 7  =  0          //  Empirical graphical tweaking gave me ~ 2.666 so I'll know the root if I see it.
+
+  I want X to be real so its square has to be positive, so the inverse of its square has to be positive.
+  I want X to be positive so its square only has 1 solution.
+
+  4 solutions for x, all real, only 1 positive:
+
+  x  ~=  0.14179314234833113261691421060332052245158131594926643565238651341810209390310453246542978199240153344619876644043915403722390
+
+  X  ~=  2.6556594751704196665429387519819458709301120493092940694695407222354410927277808234563306659372734474270085121801816691888392
+
+  Enough is a sub-domain of too much.
+
+  (See ANNEXE, at the end, for details on how I got these values.)
+
+//////  Second case: k > 0
+
+  First of all, I still haven't found the maximum value of k (at which the filter explodes). But it's ok, I'm using the variable "res" which ranges from
+  0 to 1, then k will be set to  = res * kMax.
+
+  Since with resonant filters, the resonance peak doesn't happen exactly at the cutoff frequency but a bit before that, I don't know where exactly I
+  want my cutoff for high values of k.
+  But I have plotted Vadim's prototype and found that its resonance peak happens at a decent place. Since his cutoff is basically half mine, I started by
+  plotting my proto-prototype with k close to explosion and the cutoff multiplied by g = 0.5. The curve was still shifted left to my taste.
+  For lack of a better idea I slowly increased g (using Desmos' slider) hoping for some magic to happen. As expected, magic happened.
+  At some point I found the curve visually right at its place. Looking at the value reached by g I recognise the very well known number: 0.707.
+  I don't understand why but it can't be a coincidence. So when k = kMax (that is res = 1), I want my cutoff multiplied by 1 / sqRt (2).
+  Since I already have a factor for when k = 0, this one (I'll keep calling it g for the moment) can start at g = 1 = 2^0.
+  When  res = 1,  -res / 2 = -1 / 2    ;    when  res = 0,  -res / 2 = 0.
+  So I tried  g  =  2 ^ -(res / 2)... Perfect! The resonance peak is always where I expect it to be.
 
 
+////  Mixing cases
+
+  If "Hz" is the user-facing cutoff, (ignoring g) I want the actual cutoff to be = Hz * X when res = 0 and = Hz when res = 1.
+  So obviously X ^ (1 - res) could do. But since I'm quite happy with the behaviour of g = 2 ^ -(res / 2), I'd like the first factor to converge very
+  quickly to 1. I tried X ^ (1 - res)^2 : not quick enough,  X ^ (1 - res)^3 : not quick enough,  X ^ (1 - res)^4 : perfect!
+
+  /*
+    I realise this is all very subjective... I don't know if there's beauty in science, but there's definitely science in beauty.
+  */
+
+  Anyway, now I have 2 factors, each canceling itself by being = 1 when not needed. So their product will at least work for extreme values of k
+  (that is res = 0 and res = 1). Let's try that and see what happens. Perfect, cutoff normalised:
+
+  offset  =  2 ^ -(res / 2) * r4 ^ (1 - res)^4
+  with:   res [0 , 1]  =  k / kMax   and   r4  =  2.65565947517041966654[...]
+
+////// Bode plot
+
+  https://www.desmos.com/calculator/1yzqfnq5rw
 
 
+//  Finding kMax
 
 
+======================================================================================================================================
+//  ANNEXE
+======================================================================================================================================
+////  Getting x and X (cutoff norm when k = 0)
+//////  Exact value of x:
+
+  tmp0  =  cbRt ( 1520  +  3 * i * sqRt ( 41691 ) );
+  tmp1  =  ( 17  +  139 / tmp0  +  tmp0 ) / 3;
+  
+  x   =   -6   +   sqRt ( 2 * tmp1 )   +   sqRt ( 272 / 3  -  1112 / ( 3 * tmp0 )  -  8 * tmp0 / 3  -  64 / sqRt ( tmp1 / 2 ) )  /  2;
+
+//////  Exact value of X  =  x ^ - (1 / 2)  (or  1 / sqRt (x) )
+
+  tmp0  =  cbRt ( -1520  +  3 * i * sqRt ( 41691 ) );
+  tmp1  =  sqrt ( ( 985  +  973 / tmp0  +  7 * tmp0 ) / 6 );
+
+
+  X   =   sqRt  (   11 / 7   +   tmp1 / 7   +   sqrt (  3940 / 147  -  278 / ( 21 * tmp0 )  -  2 * tmp0 / 21  +  16640 / ( 49 * tmp1 )  )  /  2   );
+
+//////  How I almost got there
+
+  Remember f(x) = 0.25 * x^4  +  6 * x^3  +  37 * x^2  +  44 * x  -  7  =  0
+  First I've normalised the coefficients by dividing the original ones by 0.25 (which is equivalent to a multiplication by 4) and got:
+
+  fn(z)  =  z^4  +  a3 * z^3  +  a2 * z^2  +  a1 * z  +  a0                    //  f"n" as in "n"ormalised.
+  with:    a3 = 24   ;   a2 = 148   ;   a1 = 176   ;   a0 = -28
+
+  Then I've made the substitution    z  ->  x - lambda          //  looking for a value of lambda that cancels the cube
+  Injected this into fn( x - lambda ), refactorised and ended up with:  [...]  (a3  -  4 * lambda) * x^3  [...]
+
+  So I let  lambda = a3 / 4.
+  Injected this into fn( x  -  a3 / 4 ), refactorised and got:
+
+  fs(x)  =  x^4  +  p * x^2  +  q * x  +  r  =  0                              //  f"s" as in "s"tandard
+  with:    p  =  a2  -  3 * a3^2 / 8   ;   q  =  a1  -  a2 * a3 / 2  +  a3^3 / 8   ;   r  =  a0  -  a1 * a3 / 4  +  a2 * a3^2 / 16  -  3 * a3^4 / 256
+  /*
+    Apparently this is called the standard form and the process to get there is called depressing the cube.
+  */
+
+  To get a resolvent cubic from there, according to my sources, you have to give it the form:   P^2 - Q^2  =  (P + Q) * (P - Q).
+  This is done by introducing a new variable that will give a cubic polynomial reducible as a product of two quadratic polynomials.
+  Then ( -b +/- sqRt (delta) ) / 2 * a  gives you 2 roots per quadratic polynomial, hence 4 in total.
+
+  Let's call "u" the variable we're looking for. By BOTH adding and subtracting  x^2 * u  +  u^2 / 4  in  fs(x), we get:
+
+  x^4  +  x^2 * u  +  u^2 / 4  -  x^2 * u  -  u^2 / 4  +  p * x^2  +  q * x  +  r  =  0
+  
+  Since (A + B)^2  =  A^2  +  2 * A * B  +  B^2
+  x^4  +  x^2 * u  +  u^2 / 4  =  (x^2  +  u / 2) ^ 2
+
+  So   P    =  x^2  +  u / 2
+  and  Q^2  =  x^2 * u  +  u^2 / 4  -  p * x^2  -  q * x  -  r  =  (u - p) * x^2  -  q * x  +  (u^2 / 4  -  r)
+
+  But u is still undefined.
+
+  Q^2 can be re-factorised as:   (u - p) * ( x^2  -  q / (u - p) * x  +  (u^2 / 4  -  r) / (u - p)
+  This means  (u - p)  =  ( x^2  -  q / (u - p) * x  +  (u^2 / 4  -  r) / (u - p)
+  Once we know u, we know u - p so let's focus on the right side of the equation.
+
+  If we assume:   (  x  -  sqRt ( (u^2 / 4  -  r) / (u - p) )  ) ^ 2   =   ( x^2  -  q / (u - p) * x  +  (u^2 / 4  -  r) / (u - p)
+  Since (A - B)^2  =  (A^2  -  2 * A * B  +  B^2)
+  Then:   q / (u - p)  =  2 * sqRt ( (u^2 / 4  -  r) / (u - p)
+
+  Which (after some re-arrangement) gives:   u^3  -  p * u^2  -  4 * r * u  +  4 * p * r  -  q^2  =  0
+
+  That's our resolvent cubic. If we solve it, we can express u in terms of p, q and r, which can be expressed in terms of a0, a1, a2 and a3.
+  Then reverse the substitution  z  ->  x - a3 / 4  and get the roots of fn(z) which also are the roots of f(x).
+
+  At this point, I had already spent 2 days trying to solve my quartic. So I decided to take a shortcut (never do that).
+  I looked up closed equations of cubic roots and applied them to my resolvent cubic.
+
+  It gave me three complex solutions.
+
+  I thought I had done something wrong and gave up. That's because I had read somewhere that a cubic equation always has 1 real root...
+  Well that's bullshit.
+  I should have kept on trying. One should always keep on trying.
+
+  So I gave my problem to WolframAlpha. It returned me 4 real roots, one of which I recognised from graphical approximation.
+  I asked for more and more and more and more and more digits, then for exact expression, then copy/pasted here...
+  Disappointing I know.
+
+  It gets worse: the exact expression has complex numbers in it (even though its final result is real)... So my solutions to the resolvent cubic
+  were probably fine (I also recognise  -a3 / 4  =  -6  in the expression...).
+
+  Failure stinks when we let it have the final word.
