@@ -218,7 +218,53 @@
 
 //  Finding kMax
 
-(See ANNEXE 2 for more details)
+  (See ANNEXE 2 for more details)
+
+  Let's define D(s) ("D" as in "D"iode) the transfer function of the filter if we ignore the global negative feedback (D(s) = H(s) when k = 0).
+
+  y / x  =  D(s)   =>   y  =  D(s) * x
+
+  Then if we re-introduce the feedback:
+
+  y  =  D(s) * (x  -  k * y)   =>   y  =  D(s) * x  -  k * D(s) * y   =>   y * (1  +  k * D(s)  =  D(s) * x
+
+                 D(s)                  1
+  H(s)  =  ----------------  =  ---------------          //  Notice that H(s)^-1  =  D(s)^-1  +  k
+            1  +  k * D(s)       D(s)^-1  +  k
+
+  So the poles of H(s) are the solutions to:
+  
+  D(s)^-1  +  k  =  0   <=>   D(s)^-1  =  -k   <=>   1  =  -k * D(s)   <=>   k * D(s)  =  -1
+
+  Now we want a pole "p0" such that re (p0) = 0
+  That is a value of   s  =  sigma  +  j * omega   where sigma = 0
+
+  That is we want   kMax * D(j * w)  =  -1   =>  (kMax * D(j * w))^-1  =  (-1)^-1  =  -1
+
+  Let's define:   den  =  D(j * w)^-1  =  H(j * w)^-1  -  k  =  ( 0.5 * w^4  -  10 * w^2  +  1 )  +  j * ( 8 * w  -  4 * w^3 )
+
+  Then   (kMax * D(j * w))^-1  =  den / kMax
+
+  k being a real positive number:   den / kMax  =  re (den) / kMax  +  im (den) / kMax
+
+  Then:   den / kMax  =  -1   <=>   re (den) / kMax  =  -1   and   im (den) / kMax  =  0
+  Or:     im (den)  =  0   and   kMax  =  -re (den)
+
+  First let's solve im (den) = 0  for w:
+
+  -4 * w^3  +  8 * w  =  0   <=>   w * (-4 * w^2  +  8)  =  0
+  w = 0  is an obvious solution but not an interesting one. So let's solve  -4 * w^2  +  8  =  0          //  a = -4  ;  b = 0  ;  c = 8
+
+          -0 - sqRt ( 0^2  - 4 * (-4 * 8) )         - sqRt (128)
+  r1  =  -----------------------------------  =  -----------------  =  sqRt (2)          //  Then obviously, r2 = -sqRt (2)
+                      2 * (-4)                    - sqrt (4 * 16)
+
+  w = sqrt (2)   =>   re (den)  =  0.5 * ( sqRt (2) )^4  -  10 * ( sqRt (2) )^2  +  1  =  2  -  20  +  1  =  -17
+
+  kMax  =  - re (den)  = 17
+
+  k  =  res * 17          //  Done!
+  
 
 
 ======================================================================================================================================
@@ -362,9 +408,9 @@
 ////  Back to the poles
 
   Let's consider a generic 1-pole transfer function:  H(s)  =  num / (a1 * s  +  a0)
-  H(s)  =  (num / a1) / (s  +  a0 / a1)
-  The pole p1  =  -a0 / a1
-  So H(s)  =  (num / a1) / (s - p1)
+  H(s)  =  (num / a1) / (s  +  a0 / a1)                                                       //  Have a1 factorising the denominator instead of dividing the numerator,
+  The pole p1  =  -a0 / a1                                                                    //  you get Vieta's formula.
+  So H(s)  =  (num / a1) / (s - p1)                                                           //  https://en.wikipedia.org/wiki/Vieta%27s_formulas
 
   The inverse Laplace transform of H(s) gives  (num / a1) * exp (p1 * t)
 
@@ -372,9 +418,9 @@
 
   If re (p1) is negative, the impulse response of H(s) is exponentially decaying and the filter is stable.
 
-  Transfer functions of higher order can be expressed as a product of 1st order transfer functions (although this seems debatable...).
-  In such a product, one exponentially growing signal is sufficient to have the filter explode (which, again is reflected by the division
-  by zero in the transfer function).
+  Transfer functions of higher order can be expressed as a product of 1st order transfer functions          //  Although this seems to be debated, at least Vieta's formula
+  In such a product, one exponentially growing signal is sufficient to have the filter explode              //  applies to polynomials of (infinitely?) high orders.
+  (which, again is reflected by the division by zero in the transfer function).
 
   This means:
     1) If we want a stable filter, all poles must be located in the left complex semiplane ( re (pn) < 0 )
