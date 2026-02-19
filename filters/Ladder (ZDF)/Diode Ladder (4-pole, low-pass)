@@ -151,11 +151,11 @@
   |H(j)|     =  ( 1 / sqRt (2) ) ^ 3  =  2 ^ -3/2  =  1 / sqRt (8)
   |H(j)|^-1  =  sqRt (8)    ;    |H(j)|^-2  =  8
 
-  Since s = j * w / wc [1], scaling the cutoff by a factor "X" ("k" is already taken... ) is equivalent to dividing s by X, indeed:    //  [1] Well in theory s = j * w and we assume wc = 1.
-  s'  =  j * w / (X * wc)   =>   s' * X  =  j * w / wc  =  s   =>   s'  =  s / X.                                                      //  Then there are 2 steps to retrieve H(jw):
-                                                                                                                                       //  s -> s / wc  then  s -> j * w
-  Assuming  w = wc = 1, then  H(s') = H(j / X)    ;    |H(j / X)|^-2  =  f(X ^ -2)                                                     //  (forgive me for taking a shortcut).
-  So I'm looking for   x  =  X ^ -2   that satisfies:
+  Since s = j * w / wc [1], scaling the cutoff by a factor "X" ("k" is already taken... ) is equivalent to dividing s by X, indeed:    //  [1] Well in theory s = sigma  +  j * omega
+  s'  =  j * w / (X * wc)   =>   s' * X  =  j * w / wc  =  s   =>   s'  =  s / X.                                                      //  and we assume sigma = 0 and wc = 1.
+                                                                                                                                       //  Then there are 2 steps to retrieve H(jw):
+  Assuming  w = wc = 1, then  H(s') = H(j / X)    ;    |H(j / X)|^-2  =  f(X ^ -2)                                                     //  s -> s / wc  then  s -> j * w
+  So I'm looking for   x  =  X ^ -2   that satisfies:                                                                                  //  (forgive me for taking a shortcut).
   
   f(x)  =  8
   i.e.:
@@ -181,7 +181,7 @@
 //////  Second case: k > 0
 
   First of all, I still haven't found the maximum value of k (at which the filter explodes). But it's ok, I'm using the variable "res" which ranges from
-  0 to 1, then k will be set to  = res * kMax.
+  0 to 1, then k will be set to  =  res * kMax.
 
   Since with resonant filters, the resonance peak doesn't happen exactly at the cutoff frequency but a bit before that, I don't know where exactly I
   want my cutoff for high values of k.
@@ -206,14 +206,16 @@
   */
 
   Anyway, now I have 2 factors, each canceling itself by being = 1 when not needed. So their product will at least work for extreme values of k
-  (that is res = 0 and res = 1). Let's try that and see what happens. Perfect, cutoff normalised:
+  (that is res = 0 and res = 1). Let's try that and see what happens.
+
+//////  Bode plot
+
+  https://www.desmos.com/calculator/1yzqfnq5rw
+
+//////  Perfect, cutoff normalised:
 
   offset  =  2 ^ -(res / 2) * r4 ^ (1 - res)^4
   with:   res [0 , 1]  =  k / kMax   and   r4  =  2.65565947517041966654[...]
-
-////// Bode plot
-
-  https://www.desmos.com/calculator/1yzqfnq5rw
 
 
 //  Finding kMax
@@ -261,7 +263,7 @@
 
   w = sqRt (2)   =>   re (den)  =  0.5 * ( sqRt (2) )^4  -  10 * ( sqRt (2) )^2  +  1  =  2  -  20  +  1  =  -17
 
-  kMax  =  - re (den)  = 17
+  kMax  =  -re (den)  = 17
 
   k  =  res * 17          //  Done!
 
@@ -382,7 +384,6 @@
 
   tmp0  =  cbRt ( -1520  +  3 * i * sqRt ( 41691 ) );
   tmp1  =  sqrt ( ( 985  +  973 / tmp0  +  7 * tmp0 ) / 6 );
-
 
   X   =   sqRt  (   11 / 7   +   tmp1 / 7   +   sqrt (  3940 / 147  -  278 / ( 21 * tmp0 )  -  2 * tmp0 / 21  +  16640 / ( 49 * tmp1 )  )  /  2   );
 
@@ -520,8 +521,8 @@
 
   Transfer functions of higher order can be expressed as a product of 1st order transfer functions          //  Although this seems to be debated, at least Vieta's formula
   In such a product, one exponentially growing signal is sufficient to have the filter explode              //  applies to polynomials of (infinitely?) high orders.
-  (which, again is reflected by the division by zero in the transfer function).
-
+  (which, again is reflected by the division by zero in the transfer function).                             //  If I understood correctly, as long as you stay away from field theory
+                                                                                                            //  and stick to real and complex numbers, this remains true. (Not 100% sure though.)
   This means:
     1) If we want a stable filter, all poles must be located in the left complex semiplane ( re (pn) < 0 )
     2) If we want an unstable filter, at least 1 of the poles must be located in the right complex semiplane ( re (pn) > 0 )
