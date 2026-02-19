@@ -102,5 +102,37 @@
 
 //  5)  Why don't you use deciBels like a normal person?
 
+  The knee k and the ceiling c basically quantify amplitudes. Having them linear is poor design.
+  I'm still ignoring the negative part.
 
+  1 corresponds to 0 dB FS and a positive polarity. If I choose 0 dB FS as a reference for c (which I will) and
+  if "cdB" is the parameter expressed in deciBels that sets the ceiling, then c = 10^(cdB/20).
+
+  If the ceiling is expressed in dB, then so should the size of the knee, plus that's what users
+  are used to with compressors and limiters.
+  Then the subtraction happens in the logarithmic domain and k becomes a factor of c.
+  Actually, something else should be the factor of c: k should remain the scaling factor.
+
+  Let "kdB" be the parameter expressed in deciBels that sets the knee.
+  If the knee is defined in dB, k is no longer a known variable. I must use c and kdB to find "o", the offset, then
+  since the offset has already been defined as:  o  =  c - k  =>  k  =  c - o
+
+  I can think of several formulae for o:
+    [z]  o  =  c * 10^(-kdB / 20)
+    [y]  o  =  c / 10^(kdB / 20)
+    [x]  o  =  10^( (cdB - kdB) / 20 )
+
+  Since cdB and kdB won't likely have more than 2 or 3 digits, formula [x] seems to me like the less error-prone
+  of the three: cdB - kdB won't be an approximation, only the division by 20 and the power of 10 are approximations,
+  so 2 in total against 3 for [z] and [y]... I might be completely off but at some point what matters is that I make
+  a decision and manage to convince myself that it's not arbitrary...
+
+  If I sum up:
+    c  =  10^(cdB / 20)
+    o  =  c * 10^(-kdB / 20)
+    k  =  c - o
+
+    f(x)  =  k * (  1 - exp ( (-x + o) / k )  )  + o
+
+  https://www.desmos.com/calculator/vscgzju2sa
 
