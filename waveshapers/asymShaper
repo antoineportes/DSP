@@ -2,7 +2,7 @@
                    WAVESHAPER:  asymShaper
 ################################################################
 
-//  Introduction
+//  1)  Introduction
 
   So I was looking at the curve of exp (x), more specifically at the asymptote in 0 when x -> -inf.
   and I thought:
@@ -33,11 +33,12 @@
 
   Plus it's a very compliant candidate to the Antiderivative Anti-aliasing method:
   its antiderivatives are:  exp (x) + x  and  x - exp (-x) (same number of operations).
+  If  sign ( x[n] )  !=  sign ( x[n-1] )  some workaround is needed though...
 
   I could stop here and I would have a very decent waveshaper. But I'll keep tweaking it a bit.
 
 
-//  Soft knee
+//  2)  Soft knee
 
   This is close enough to tanH to be considered a "tube-like" wavehaper. But what if I want to emulate
   a transistor or a diode?
@@ -65,11 +66,41 @@
     f(x)  ->  k * f( (x - 1 + k) / k) + 1 - k
 
   /*
-    When k != 1 and x -> 0,  y = x  so no denormal noise.
+    Freebie 1:  When k != 1 and x -> 0,  y = x  so no denormal noise.
+    Freebie 2:  I've noticed that if k  =  2 * pi / 10  the curve almost matches tanH (x)
   */
   
   I now have a waveshaper that morphs continuously between a hard-clipper (k = 0) and a sigmoid (k = 1).
   Let's tweak it further.
 
 
-//  Ceiling
+//  3)  Nomenclature
+
+  Before I move on, in order to minimise confusion, let's define F(x) the overall function and f(x) the soft
+  knee function.
+  So far:
+    
+    f(x)  =  k * (  1 - exp ( -(x - 1 + k) / k )  )  + 1 - k            //    The math would look nicer with the negative part
+                                                                        //    as a reference (f(x)) and the positive part as
+    F(x)  =  x < (k - 1)  ?  -f(-x)  :  x > (1 - k)  ?  f(x)  :  x      //    -f(-x) but I haven't reached optimisation phase yet.
+
+
+//  4)  Ceiling
+
+  I was so happy when I got this asymptote in 1.
+  Now I'm bored with it. I want an asymptote in whatever.
+
+  Let c be the position of the ceiling (the asymptote).
+  k is still the size of the knee. So the vertical size of f(x) is still k.
+
+  That is the scaling factor remains unchanged and the offset is shifted downwards by 1 - c:
+
+  1 - k - (1 - c)  =  c - k        //  c can either be inferior or superior to 1.
+
+  I've got this so far:  https://www.desmos.com/calculator/dijrh8kjxk
+
+
+//  5)  Why don't you use deciBels like a normal person?
+
+
+
