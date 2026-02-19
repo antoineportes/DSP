@@ -1,0 +1,40 @@
+################################################################
+                   WAVESHAPER:  asymShaper
+################################################################
+
+//  Introduction
+
+  So I was looking at the curve of exp (x), more specifically at the asymptote in 0 when x -> -inf.
+  and I thought:
+    "If that asymptote were in 1 and if -inf. were +inf. this would be a decent waveshaper."
+
+  Then I realised that by considering the negative part of the not-yet-existing waveshaper I was pretty
+  much already looking at it:
+  -inf. can remain -inf. 0 must become -1 and 1 must become 0... Two problems, one fix.
+
+    x  <=  0  ?  f(x)  =  exp (x) - 1
+
+  Ok, now for the positive part -inf. should be +inf. so:  x -> -x
+  This puts the asymptote in the right semiplane but the function is decaying while it should be growing.
+  Easy fix:  exp (-x)  ->  -exp (-x)
+  -exp (-0)  =  -1    ;    -exp (-inf.)  =  -0    ;    obviously I just need an offset of +1.
+
+  Then:
+
+    f (x)  =  x <= 0  ?  exp (x) - 1  :  1 - exp (-x);
+
+  The curve lies right between tanH (x) and 2 * aTan (x) / pi so it sits in a comfortable place in the
+  family of sigmoids.
+
+  tanH has one multiplication:  2 * x ,  one exp:  exp (2 * x) ,  one addition:  exp (2 * x) + 1 ,
+  one subtraction:  exp (2 * x) - 1 ,  and one division:  ( exp (2 * x) - 1 ) / ( exp (2 * x) + 1 )
+
+  f (x) has one conditional branching, one exp, one subtraction (and potentially one sign inversion).
+
+  Plus it's a very compliant candidate to the Antiderivative Anti-aliasing method:
+  its antiderivatives are:  exp (x) + x  and  x - exp (-x) (same number of operations).
+
+  I could stop here and I would have a very decent waveshaper. But I'll keep tweaking it a bit.
+
+
+//  Soft knee
