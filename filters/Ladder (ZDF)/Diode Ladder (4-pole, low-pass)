@@ -257,9 +257,9 @@
 
           -0 - sqRt ( 0^2  - 4 * (-4 * 8) )         - sqRt (128)
   r1  =  -----------------------------------  =  -----------------  =  sqRt (2)          //  Then obviously, r2 = -sqRt (2)
-                      2 * (-4)                    - sqrt (4 * 16)
+                      2 * (-4)                    - sqRt (4 * 16)
 
-  w = sqrt (2)   =>   re (den)  =  0.5 * ( sqRt (2) )^4  -  10 * ( sqRt (2) )^2  +  1  =  2  -  20  +  1  =  -17
+  w = sqRt (2)   =>   re (den)  =  0.5 * ( sqRt (2) )^4  -  10 * ( sqRt (2) )^2  +  1  =  2  -  20  +  1  =  -17
 
   kMax  =  - re (den)  = 17
 
@@ -273,12 +273,12 @@
   wc  =  cutoff (Hz)        //  (assumed pre-warped)
   T   =  1 / sRate          //  sRate  =  sampling rate
   g1  =  wc * T / 2
-  g2  =  wc * T             //  2 * wc * T / 2
+  g2  =  wc * T             //  2 * wc * T / 2  =  2 * g1
 
         -------------o<--------------------------------
         |            |                    +     +     |
         |            |              ------->(+)<------o  (y4)
-        |            |              |   z4   |  [n]   ^ +
+        |            |              |   z4   |  [n]   ^
         |            |              |        v        |
         |            |              |     [ z^-1 ]    |
         |            |              |   z4   |  [n-1] |
@@ -290,7 +290,7 @@
         |            |                                ^ +
         |            |                    +     +     |
         |            |              ------->(+)<------o  (y3)
-        |            |              |   z3   |  [n]   ^ +
+        |            |              |   z3   |  [n]   ^
         |            |              |        v        |
         |            |              |     [ z^-1 ]    |
         |            |              |   z3   |  [n-1] |
@@ -302,7 +302,7 @@
         |            |                                ^ +
         |            |                    +     +     |
         |            |              ------->(+)<------o  (y2)
-        |            |              |   z2   |  [n]   ^ +
+        |            |              |   z2   |  [n]   ^
         |            |              |        v        |
         |            |              |     [ z^-1 ]    |
         |            |              |   z2   |  [n-1] |
@@ -314,7 +314,7 @@
         |            |                                ^ +
         |            |                    +     +     |
         |            |              ------->(+)<------o  (y1)
-        |            |              |   z1   |  [n]   ^ +
+        |            |              |   z1   |  [n]   ^
         |            |              |        v        |
         |            |              |     [ z^-1 ]    |
         |            |              |   z1   |  [n-1] |
@@ -326,8 +326,44 @@
   The first value I need is y4. If I isolate it, I'll be able to choose where to insert non-linearities:
   in the feedback path (before or after k), in the feedforward path (between A and B) or all of the above.
 
+
 ////  Zero Delay Feedback equation
-  
+//////  Steps:
+
+  https://www.desmos.com/calculator/5ad3cle6fi
+
+//////  Result:
+
+          2 * g1^4 * x  +  g1^3 * z1  +  (2 * g1^3  +  g1^2) * z2  +  (2 * g1^3  +  4 * g1^2  +  g1) * z3  +  (2 * g1^3  +  9 * g1^2  +  6 * g1  +  1) * z4
+  y4  =  ---------------------------------------------------------------------------------------------------------------------------------------------------
+                                             1  +  8 * g1  +  20 * g1^2  +  16 * g1^3  +  (k + 1) * 2 * g1^4
+
+  Now let's say F(x) is a waveshaper. I can do:
+    1)  x  -=  k * F(y4)
+    2)  x  -=  F(k * y4)
+    3)  x   =  F(x  -  k * y4)
+    4)  x   =  F ( x  -  F (k *  F (y4)))     //  (haha)
+
+/*
+  Inopinate digression:
+    I've read somewhere (called KVR) that ZDF and TPT are interchangeable expressions with exact same meaning...
+    Well what I've just done with the waveshaper F(x) is a counter-example of this peremptory statement.
+
+    ZDF = "Zero Delay Feedback".
+      So far, my filter has no delay in any of its feedback loops (only the integrators have z^-1 elements).
+      So this IS a ZDF filter.
+
+    TPT = "Topology Preserving Transform".
+      Naively inserting non-linearities at some points in the block diagram (like I did here) instead of solving non-linear ZDF equations
+      (through Newton-Raphson or such) does NOT preserve the topology.
+      That is: this filter (with naive implementation of non-linearities) doesn't have a strict counter-part in the analog realm.
+      I want the filter to sound good and behave nicely when modulated, while remaining CPU-friendly. I don't care this much for faithfulness.
+      After all it's called "[generic] Diode Ladder", not "TB-303 1:1 emulation"... So why not?
+    
+    Anyway, this is an example of a ZDF non-TPT filter. Which couldn't exist if these expressions were synonyms.
+    (I belive my point has been made, back to the filter.)
+*/
+
 
 
 ######################################################################################################################################
@@ -386,13 +422,13 @@
 
   But u is still undefined.
 
-  Q^2 can be re-factorised as:   (u - p) * ( x^2  -  q / (u - p) * x  +  (u^2 / 4  -  r) / (u - p)
-  This means  (u - p)  =  ( x^2  -  q / (u - p) * x  +  (u^2 / 4  -  r) / (u - p)
+  Q^2 can be re-factorised as:   (u - p) * ( x^2  -  q / (u - p) * x  +  (u^2 / 4  -  r) / (u - p) )
+  This means  (u - p)  =  ( x^2  -  q / (u - p) * x  +  (u^2 / 4  -  r) / (u - p) )
   Once we know u, we know u - p so let's focus on the right side of the equation.
 
   If we assume:   (  x  -  sqRt ( (u^2 / 4  -  r) / (u - p) )  ) ^ 2   =   ( x^2  -  q / (u - p) * x  +  (u^2 / 4  -  r) / (u - p)
   Since (A - B)^2  =  (A^2  -  2 * A * B  +  B^2)
-  Then:   q / (u - p)  =  2 * sqRt ( (u^2 / 4  -  r) / (u - p)
+  Then:   q / (u - p)  =  2 * sqRt ( (u^2 / 4  -  r) / (u - p) )
 
   Which (after some re-arrangement) gives:   u^3  -  p * u^2  -  4 * r * u  +  4 * p * r  -  q^2  =  0
 
@@ -449,7 +485,7 @@
   The rules of exponentiation (including Euler's fromula) state that:
   exp (x + y)  =  exp (x) * exp (y)
   exp (-x)  =  1 / exp (x)
-  exp (i * x)  =  cos (x) + i * sin (x)   ( i = sqrt (-1) )
+  exp (i * x)  =  cos (x) + i * sin (x)   ( i = sqRt (-1) )
   The rules of trigonometry state that:
   sin (-x)  =  -sin (x)
   cos (-x)  =  cos (x)
