@@ -38,3 +38,38 @@
 
 
 //  Soft knee
+
+  This is close enough to tanH to be considered a "tube-like" wavehaper. But what if I want to emulate
+  a transistor or a diode?
+
+  These semiconductors are pretty much linear until some breaking point. Then you enter a soft knee.
+  A very small one for diodes and a medium one for transistors (I'm simplifying things a lot here).
+
+  All I have to do is apply y = x up until some point k where I can use f(x) only with an offset and
+  a rescaling factor.
+
+  The offset for y is obviously k. At x = y = k, I want the behaviour of f(0) so:
+    f(x)  ->  f(x - k) + k          //  (I'm ignoring the negative part until further notice.)
+
+  Ok but now the asymptote is no longer in 1. I want f(x) to fit between k and 1.
+  So its size should be 1 - k instead of 1... My rescaling factor is 1 - k.
+
+  But that's only a vertical stretch, I need to compensate for it by inversely rescaling the input.
+
+    f(x)  ->  (1 - k) * f( (x - k) / (1 - k) ) + k
+
+  Even though this works, one detail is not very practical: the size of the knee is 1 - k.
+  If k is a parameter, then it should be the size of the knee. Then the offset becomes 1 - k and the
+  rescaling factor becomes k.
+
+    f(x)  ->  k * f( (x - 1 + k) / k) + 1 - k
+
+  /*
+    When k != 1 and x -> 0,  y = x  so no denormal noise.
+  */
+  
+  I now have a waveshaper that morphs continuously between a hard-clipper (k = 0) and a sigmoid (k = 1).
+  Let's tweak it further.
+
+
+//  Ceiling
