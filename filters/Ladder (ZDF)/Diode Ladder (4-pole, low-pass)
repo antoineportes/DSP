@@ -228,7 +228,7 @@
 
   Then if we re-introduce the feedback:
 
-  y  =  D(s) * (x  -  k * y)   =>   y  =  D(s) * x  -  k * D(s) * y   =>   y * (1  +  k * D(s)  =  D(s) * x
+  y  =  D(s) * (x  -  k * y)   =>   y  =  D(s) * x  -  k * D(s) * y   =>   y * (1  +  k * D(s))  =  D(s) * x
 
                  D(s)                  1
   H(s)  =  ----------------  =  ---------------          //  Notice that H(s)^-1  =  D(s)^-1  +  k
@@ -357,8 +357,10 @@
   Maybe if I split the feedbacks to retrieve the classical representation of a 1-pole LPF (times 4) I could follow the signal path
   from x to y4 instead of the other way around. The formula for y4 might still be of use to apply the global negative feedback though.
 
-  Let's expand the block diagram to reveal each 1-pole stage with the goal of re-simplifying it with [ LPn ] blocks (n = [1 , 4]):
+  Let's expand the block diagram to reveal each 1-pole stage with the goal of re-simplifying it with [ LPn ] blocks (n = [1 , 4]).
 
+
+////  Expanded block diagram
 
                     (y4)                                   ε
    y4 <-o<-----------o<------(+)<------o<--[ g1 ]<--(+)<------
@@ -429,6 +431,82 @@
   f4(x)  =  a4 * x  +  b4
 
   a4  =  a3  =  a2  =  a1 / 2
+  ε   =  y3
+
+
+////  Simplified block diagram
+
+                                     ------------------------------------------------
+                                     |                                              |
+           α      β             y1 + v  γ             y2          δ             y3  |
+  x -->(+)--->(+)--->[ f1 (β) ]---->(+)--->[ f2 (γ) ]---->o-->(+)--->[ f3 (δ) ]---->o-->[ f4 (y3) ]-->o--> y4
+        ^ -    ^ +     (LP1)                 (LP2)        |    ^ +     (LP3)              (LP4)       |
+        |      |                                          |    |                                      |
+        |      --------------------------------------------    |                                      |
+        |                                                      |                                      |
+        --------------------------[ k ]<-----------------------o<--------------------------------------
+
+  At this point, I know x, y4, z1[n-1], z2[n-1], z3[n-1], z4[n-1] and I can easily get  α  =  x  -  k * y4
+  Knowing all zn (n = [1, 4]) I know the bn from functions fn (x).
+
+  Let's define  fn^-1 (y)  =  (y - bn) / an   (n = [1 , 4])  the reciproqual functions of fn (x).
+  Then:
+
+  y3  =  f4^-1 (y4)  =  (y4 - b4) / a4
+  δ   =  f3^-1 (y3)  =  (y3 - b3) / a3
+  y2  =  δ  -  y4
+
+  Now that I know y2, there are 2 ways of getting y1:
+    (1)  f2^-1 (y2) - y3
+    (2)  f1 (α + y2)
+
+  If I choose (1) where do I insert the non-linearities? Same issue as before. So option (2) and I can finally process
+  the input forwards and no longer backwards.
+  Plus, once non-linearities are involved, the ZDF equation no longer stands. So the values of y4, y3 and y2 obtained so
+  far are going to be used for feedback loops but other than that, they are temporary. I'll redefine them starting from the
+  input and taking the non-linearities into account so that said non-linearities can be stored in the z^-1 blocks.
+
+  /*
+    Inopinate digression:
+      I've read somewhere (called KVR) that ZDF and TPT are interchangeable expressions with exact same meaning...
+      Well the way I'm about to implement non-linearities is a counter-example of this peremptory statement.
+
+      ZDF = "Zero Delay Feedback".
+        So far, my filter has no delay in any of its feedback loops (only the integrators have z^-1 elements).
+        So this IS a ZDF filter.
+
+      TPT = "Topology Preserving Transform".
+        Naively inserting non-linearities at some points in the block diagram (like I'll do here) instead of solving non-linear ZDF equations
+        (through Newton-Raphson or such) does NOT preserve the topology.
+        That is: this filter (with naive implementation of non-linearities) doesn't have a strict counter-part in the analog realm.
+        I want the filter to sound good and behave nicely when modulated, while remaining CPU-friendly. I don't care this much for faithfulness.
+        After all it's called "[generic] Diode Ladder", not "TB-303 1:1 emulation"... So why not?
+     
+      Anyway, this is an example of a ZDF non-TPT filter. Which couldn't exist if these expressions were synonyms.
+      (I believe my point has been made, back to the filter.)
+  */
+
+  Now that y4, y3 and y2 are known, all feedback loops are solved, which means that the inputs of every 1-pole stage in the cascade is
+  known (or easy to find). The cascade can now be processed in a regular manner.
+
+  x  -=  k * y4;                      //  α
+  x  +=  y2;                          //  β
+  y1  =  (g2 * x  +  z1) / (1 + g2)
+  z1  =  y1 + y1 - z1
+
+  y1 +=  y3                           //  γ
+  y2  =  (g1 * y1  +  z2) / (1 + g2)
+  z2  =  y2 + y2 - z2
+
+  y2 +=  y4                           //  δ
+  y3  =  (g1 * y2  +  z3) / (1 + g2)
+  z3  =  y3 + y3 - z3
+
+  y4  =  (g1 * y3  +  z4) / (1 + g2)
+  z4  =  y4 + y4 - z4;
+
+
+////  Full algorithm
   
 
 
