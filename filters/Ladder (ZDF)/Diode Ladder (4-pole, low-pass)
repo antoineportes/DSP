@@ -334,38 +334,102 @@
 
   https://www.desmos.com/calculator/5ad3cle6fi
 
-//////  Result:
+//////  Results:
 
           2 * g1^4 * x  +  g1^3 * z1  +  (2 * g1^3  +  g1^2) * z2  +  (2 * g1^3  +  4 * g1^2  +  g1) * z3  +  (2 * g1^3  +  9 * g1^2  +  6 * g1  +  1) * z4
   y4  =  ---------------------------------------------------------------------------------------------------------------------------------------------------
                                              1  +  8 * g1  +  20 * g1^2  +  16 * g1^3  +  (k + 1) * 2 * g1^4
 
-  Now let's say F(x) is a waveshaper. I can do:
-    1)  x  -=  k * F(y4)
-    2)  x  -=  F(k * y4)
-    3)  x   =  F(x  -  k * y4)
-    4)  x   =  F ( x  -  F (k *  F (y4)))     //  (haha)
+          (1 + g2) * y4  -  z4[n-1]                  (1 + g2) * y3  -  z3[n-1]                  (1 + g2) * y1  -  z2[n-4]
+  y3  =  ---------------------------    ;    y2  =  ---------------------------    ;    y1  =  ---------------------------
+                     g1                                         g1                                         g1
 
-/*
-  Inopinate digression:
-    I've read somewhere (called KVR) that ZDF and TPT are interchangeable expressions with exact same meaning...
-    Well what I've just done with the waveshaper F(x) is a counter-example of this peremptory statement.
+  z1[n]  =  y1  +  y1  -  z1[n-1]
+  z2[n]  =  y2  +  y2  -  z2[n-1]
+  z3[n]  =  y3  +  y3  -  z3[n-1]
+  z4[n]  =  y4  +  y4  -  z4[n-1]
 
-    ZDF = "Zero Delay Feedback".
-      So far, my filter has no delay in any of its feedback loops (only the integrators have z^-1 elements).
-      So this IS a ZDF filter.
+  Ok, that's wonderful.
+  But how do I insert non-linearities in the feedback path (before or after k) or in the feedforward path (between A and B)?
 
-    TPT = "Topology Preserving Transform".
-      Naively inserting non-linearities at some points in the block diagram (like I did here) instead of solving non-linear ZDF equations
-      (through Newton-Raphson or such) does NOT preserve the topology.
-      That is: this filter (with naive implementation of non-linearities) doesn't have a strict counter-part in the analog realm.
-      I want the filter to sound good and behave nicely when modulated, while remaining CPU-friendly. I don't care this much for faithfulness.
-      After all it's called "[generic] Diode Ladder", not "TB-303 1:1 emulation"... So why not?
-    
-    Anyway, this is an example of a ZDF non-TPT filter. Which couldn't exist if these expressions were synonyms.
-    (I belive my point has been made, back to the filter.)
-*/
+  Seems like by oversimplifying, I've reduced the field of possibilities.
+  The interwoven feedbacks are preventing me from seeing each 1-pole stage in isolation. Which is why I had to start at the end.
+  Maybe if I split the feedbacks to retrieve the classical representation of a 1-pole LPF (times 4) I could follow the signal path
+  from x to y4 instead of the other way around. The formula for y4 might still be of use to apply the global negative feedback though.
 
+  Let's expand the block diagram to reveal each 1-pole stage with the goal of re-simplifying it with [ LPn ] blocks (n = [1 , 4]):
+
+
+                    (y4)                                   ε
+   y4 <-o<-----------o<------(+)<------o<--[ g1 ]<--(+)<------
+        |            |        ^        |             ^ -     |
+        |            |   z4   |  [n-1] |             |       |
+        |            |     [ z^-1 ]    |             |       |
+        |            |        ^        |             |       |
+        |            v   z4   |  [n]   |             |       |
+        |            o------>(+)<-------             |       |
+        |            |     +     +                   |       |
+        |            v                               |       |
+        |            o-------------[ 2 ]--------------       |
+        |            |                                       |
+        |          + v  δ                                    |
+        |           (+)---->(+)-->[ g1 ]-->o------>(+)------>o y3
+        |            ^     - ^             |      + ^        |
+        |            |       |             |   z3   |  [n-1] |
+        |            |       |             |     [ z^-1 ]    |
+        v            |       |             |        ^        |
+      [ k ]          |       |             |   z3   |  [n]   v
+        |            |       |             ------->(+)<------o
+        |            |       |                   +     +     |
+        |            |       |                               v
+        |            |       --------------[ 2 ]<------------o
+        |            |                                       |
+        |            |                                    γ  v +
+        |         y2 o<------(+)<------o<--[ g1 ]<--(+)<----(+)
+        |            |        ^ +      |             ^ -     ^
+        |            |   z2   |  [n-1] |             |       |
+        |            |     [ z^-1 ]    |             |       |
+        |            |        ^        |             |       |
+        |            v   z2   |  [n]   |             |       |
+        |            o------>(+)<-------             |       |
+        |            |     +     +                   |       |
+        |            v                               |       |
+        |            o------------>[ 2 ]--------------       |
+        |            |                                       |
+      - v     α    + v  β                                    |
+  x -->(+)--------->(+)---->(+)-->[ g2 ]-->o------>(+)------>o y1
+                           - ^             |      + ^        |
+                             |             |   z1   |  [n-1] |
+                             |             |     [ z^-1 ]    |
+                             |             |        ^        |
+                             |             |   z1   |  [n]   v
+                             |             ------->(+)<------o
+                             |                   +     +     |
+                             ---------------------------------
+
+
+  LP1 starts at β and ends at y1.                                                         g2               z1
+  y1  =  (β - y1) * g2  +  z1    =>    y1 * (1 + g2)  =  g2 * β  +  z1    =>   y1  =  --------- * β  +  --------  =  a1 * β  +  b1
+                                                                                        1 + g2           1 + g2
+  f1(x)  =  a1 * x  +  b1
+
+  LP2 starts at γ and ends at y2.                                                                     g1               z2
+  y2  =  (γ  -  2 * y2) * g1  +  z2    =>    y2 * (1  +  2 * g1)  =  g1 * γ  +  z2    =>    y2  =  -------- * γ  +  --------  =  a2 * γ  +  b2
+                                                                                                    1 + g2           1 + g2
+  f2(x)  =  a2 * x  +  b2
+
+  LP3 starts at δ and ends at y3.                                                                     g1               z3
+  y3  =  (δ  -  2 * y3) * g1  +  z3    =>    y3 * (1  +  2 * g1)  =  g1 * δ  +  z3    =>    y3  =  -------- * δ  +  --------  =  a3 * δ  +  b3
+                                                                                                    1 + g2           1 + g2
+  f3(x)  =  a3 * x  +  b3
+
+  LP4 starts at ε and ends at y4.                                                                     g1               z4
+  y4  =  (ε  -  2 * y4) * g1  +  z4    =>    y4 * (1  +  2 * g1)  =  g1 * ε  +  z4    =>    y4  =  -------- * ε  +  --------  =  a4 * ε  +  b4
+                                                                                                    1 + g2           1 + g2
+  f4(x)  =  a4 * x  +  b4
+
+  a4  =  a3  =  a2  =  a1 / 2
+  
 
 
 ######################################################################################################################################
