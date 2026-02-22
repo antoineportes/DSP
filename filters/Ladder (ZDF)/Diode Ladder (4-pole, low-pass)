@@ -328,186 +328,131 @@
   The first value I need is y4. If I isolate it, I'll be able to choose where to insert non-linearities:
   in the feedback path (before or after k), in the feedforward path (between A and B) or all of the above.
 
-
-////  Zero Delay Feedback equation
-//////  Steps:
-
-  https://www.desmos.com/calculator/5ad3cle6fi
-
-//////  Results:
-
-          2 * g1^4 * x  +  g1^3 * z1  +  (2 * g1^3  +  g1^2) * z2  +  (2 * g1^3  +  4 * g1^2  +  g1) * z3  +  (2 * g1^3  +  9 * g1^2  +  6 * g1  +  1) * z4
-  y4  =  ---------------------------------------------------------------------------------------------------------------------------------------------------
-                                             1  +  8 * g1  +  20 * g1^2  +  16 * g1^3  +  (k + 1) * 2 * g1^4
-
-          (1 + g2) * y4  -  z4[n-1]                  (1 + g2) * y3  -  z3[n-1]                  (1 + g2) * y1  -  z2[n-4]
-  y3  =  ---------------------------    ;    y2  =  ---------------------------    ;    y1  =  ---------------------------
-                     g1                                         g1                                         g1
-
-  z1[n]  =  y1  +  y1  -  z1[n-1]
-  z2[n]  =  y2  +  y2  -  z2[n-1]
-  z3[n]  =  y3  +  y3  -  z3[n-1]
-  z4[n]  =  y4  +  y4  -  z4[n-1]
-
-  Ok, that's wonderful.
-  But how do I insert non-linearities in the feedback path (before or after k) or in the feedforward path (between A and B)?
-
-  Seems like by oversimplifying, I've reduced the field of possibilities.
-  The interwoven feedbacks are preventing me from seeing each 1-pole stage in isolation. Which is why I had to start at the end.
-  Maybe if I split the feedbacks to retrieve the classical representation of a 1-pole LPF (times 4) I could follow the signal path
-  from x to y4 instead of the other way around. The formula for y4 might still be of use to apply the global negative feedback though.
-
-  Let's expand the block diagram to reveal each 1-pole stage with the goal of re-simplifying it with [ LPn ] blocks (n = [1 , 4]).
-
+  But the interwoven feedbacks are preventing me from clearly seeing each 1-pole stage in isolation.
+  Let's reveal them by expanding the block diagram, with the goal of re-simplifying it with [ LPn ] blocks.     //  n = [1 , 4].
 
 ////  Expanded block diagram
 
-                    (y4)                                   ε
-   y4 <-o<-----------o<------(+)<------o<--[ g1 ]<--(+)<------
-        |            |        ^        |             ^ -     |
-        |            |   z4   |  [n-1] |             |       |
-        |            |     [ z^-1 ]    |             |       |
-        |            |        ^        |             |       |
-        |            v   z4   |  [n]   |             |       |
-        |            o------>(+)<-------             |       |
-        |            |     +     +                   |       |
-        |            v                               |       |
-        |            o-------------[ 2 ]--------------       |
-        |            |                                       |
-        |          + v  δ                                    |
-        |           (+)---->(+)-->[ g1 ]-->o------>(+)------>o y3
-        |            ^     - ^             |      + ^        |
-        |            |       |             |   z3   |  [n-1] |
-        |            |       |             |     [ z^-1 ]    |
-        v            |       |             |        ^        |
-      [ k ]          |       |             |   z3   |  [n]   v
-        |            |       |             ------->(+)<------o
-        |            |       |                   +     +     |
-        |            |       |                               v
-        |            |       --------------[ 2 ]<------------o
-        |            |                                       |
-        |            |                                    γ  v +
-        |         y2 o<------(+)<------o<--[ g1 ]<--(+)<----(+)
-        |            |        ^ +      |             ^ -     ^
-        |            |   z2   |  [n-1] |             |       |
-        |            |     [ z^-1 ]    |             |       |
-        |            |        ^        |             |       |
-        |            v   z2   |  [n]   |             |       |
-        |            o------>(+)<-------             |       |
-        |            |     +     +                   |       |
-        |            v                               |       |
-        |            o------------>[ 2 ]--------------       |
-        |            |                                       |
-      - v     α    + v  β                                    |
-  x -->(+)--------->(+)---->(+)-->[ g2 ]-->o------>(+)------>o y1
-                           - ^             |      + ^        |
-                             |             |   z1   |  [n-1] |
-                             |             |     [ z^-1 ]    |
-                             |             |        ^        |
-                             |             |   z1   |  [n]   v
-                             |             ------->(+)<------o
-                             |                   +     +     |
-                             ---------------------------------
+                    (y4)                  λ        (H)     (y3)
+   y4 <-o<-----------o<------(+)<------o<---[ g1 ]<---(+)<------
+        |            |        ^        |               ^ -     |
+        |            |   z4   |  [n-1] |               |       |
+        |            |     [ z^-1 ]    |               |       |
+        |            |        ^        |               |       |
+        |            v   z4   |  [n]   |               |       |
+        |            o------>(+)<-------               |       |
+        |            |     +     +                     |       |
+        |            v                                 |       |
+        |            o------------->[ 2 ]---------------       |
+        |            |                                         |
+        |          + v  δ      (F)        θ                    |
+        |           (+)---->(+)--->[ g1 ]--->o------>(+)------>o y3
+        |            ^     - ^               |      + ^        |
+        |            |       |               |   z3   |  [n-1] |
+        |            |       |               |     [ z^-1 ]    |
+        v            |       |               |        ^        |
+      [ k ]          |       |               |   z3   |  [n]   v
+        |            |       |               ------->(+)<------o
+        |            |       |                     +     +     |
+        |            |       |                                 v
+        |            |       ----------------[ 2 ]<------------o
+        |            |                                         |
+        |            |                    η        (D)      γ  v +
+        |         y2 o<------(+)<------o<---[ g1 ]<---(+)<----(+)
+        |            |        ^ +      |               ^ -     ^
+        |            |   z2   |  [n-1] |               |       |
+        |            |     [ z^-1 ]    |               |       |
+        |            |        ^        |               |       |
+        |            v   z2   |  [n]   |               |       |
+        |            o------>(+)<-------               |       |
+        |            |     +     +                     |       |
+        |            v                                 |       |
+        |            o------------->[ 2 ]---------------       |
+        |            |                                         |
+      - v     α    + v  β      (B)        ζ                    |
+  x -->(+)--------->(+)---->(+)--->[ g2 ]--->o------>(+)------>o y1
+             (A)           - ^               |      + ^        |
+                             |               |   z1   |  [n-1] |
+                             |               |     [ z^-1 ]    |
+                             |               |        ^        |
+                             |               |   z1   |  [n]   v
+                             |               ------->(+)<------o
+                             |                     +     +     |
+                             -----------------------------------
 
+////  Integrators' state update
 
-  LP1 starts at β and ends at y1.                                                         g2               z1
-  y1  =  (β - y1) * g2  +  z1    =>    y1 * (1 + g2)  =  g2 * β  +  z1    =>   y1  =  --------- * β  +  --------  =  a1 * β  +  b1
-                                                                                        1 + g2           1 + g2
-  f1(x)  =  a1 * x  +  b1
+  z1[n]  =  y1 + ζ    ;    ζ  =  y1 - z1[n-1]
+  z1  =  y1 + y1 - z1
 
-  LP2 starts at γ and ends at y2.                                                                     g1               z2
-  y2  =  (γ  -  2 * y2) * g1  +  z2    =>    y2 * (1  +  2 * g1)  =  g1 * γ  +  z2    =>    y2  =  -------- * γ  +  --------  =  a2 * γ  +  b2
-                                                                                                    1 + g2           1 + g2
-  f2(x)  =  a2 * x  +  b2
+  z2[n]  =  y2 + η    ;    η  =  y2 - z2[n-1]
+  z2  =  y2 + y2 - z2
 
-  LP3 starts at δ and ends at y3.                                                                     g1               z3
-  y3  =  (δ  -  2 * y3) * g1  +  z3    =>    y3 * (1  +  2 * g1)  =  g1 * δ  +  z3    =>    y3  =  -------- * δ  +  --------  =  a3 * δ  +  b3
-                                                                                                    1 + g2           1 + g2
-  f3(x)  =  a3 * x  +  b3
+  z3[n]  =  y3 + θ    ;    θ  =  y3 - z3[n-1]
+  z3  =  y3 + y3 - z3
 
-  LP4 starts at ε and ends at y4.                                                                     g1               z4
-  y4  =  (ε  -  2 * y4) * g1  +  z4    =>    y4 * (1  +  2 * g1)  =  g1 * ε  +  z4    =>    y4  =  -------- * ε  +  --------  =  a4 * ε  +  b4
-                                                                                                    1 + g2           1 + g2
-  f4(x)  =  a4 * x  +  b4
+  z4[n]  =  y4 + λ    ;    λ  =  y4 - z4[n-1]
+  z4  =  y4 + y4 - z4
 
-  a4  =  a3  =  a2  =  a1 / 2
-  ε   =  y3
+////  Identifying each 1-pole stage
 
+  LP1 starts at β and ends at y1.                                                      g2 * β  +  z1
+  y1  =  (β - y1) * g2  +  z1    =>    y1 * (1 + g2)  =  g2 * β  +  z1    =>   y1  =  ---------------  =  f1 (β)
+                                                                                           1 + g2
+  and:  β  =  α + y2    (with:  α  =  x  -  k * y4)
+
+  LP2 starts at γ and ends at y2.                                                                   g1 * γ  +  z2
+  y2  =  (γ  -  2 * y2) * g1  +  z2    =>    y2 * (1  +  2 * g1)  =  g1 * γ  +  z2    =>    y2  =  ---------------  =  f2 (γ)
+                                                                                                        1 + g2
+  and:  γ  =  y1 + y3
+
+  LP3 starts at δ and ends at y3.                                                                   g1 * δ  +  z3
+  y3  =  (δ  -  2 * y3) * g1  +  z3    =>    y3 * (1  +  2 * g1)  =  g1 * δ  +  z3    =>    y3  =  ---------------  =  f3 (δ)
+                                                                                                        1 + g2
+  and:  δ  =  y2 + y4
+  
+  LP4 starts at y3 and ends at y4.                                                                     g1  * y3  +  z4
+  y4  =  (y3  -  2 * y4) * g1  +  z4    =>    y4 * (1  +  2 * g1)  =  g1 * y3  +  z4    =>    y4  =  -----------------  =  f4 (y3)
+                                                                                                           1 + g2
+  
+  So I need y4 and y2 to process LP1, y3 to process LP2 and y4 to process LP3.
+  That makes three preliminary (temporary [1]) feedback signals: y4, y3 and y2.                             //  [1] Why temporary? See Annexe 3.
+  Let's assume I know y4.
+  Then y3 is simply f4^-1 (y4) (where "^-1" means "inverse function", not "to the power of minus one").     //  Hope it's not confusing.
+  And  δ  =  f3^-1 (y3)   =>   y2 + y4  =  f3^-1 (y3)   =>   y2  =  f3^-1 (y3) - y4.                        //  We often see  sin^-1 = arcSin  so...
+
+  So pretty much everything relies on y4. Which happens to be the most tedious unknown signal to get.
 
 ////  Simplified block diagram
 
                                      ------------------------------------------------
                                      |                                              |
-           α      β             y1 + v  γ             y2          δ             y3  |
-  x -->(+)--->(+)--->[ f1 (β) ]---->(+)--->[ f2 (γ) ]---->o-->(+)--->[ f3 (δ) ]---->o-->[ f4 (y3) ]-->o--> y4
-        ^ -    ^ +     (LP1)                 (LP2)        |    ^ +     (LP3)              (LP4)       |
-        |      |                                          |    |                                      |
-        |      --------------------------------------------    |                                      |
-        |                                                      |                                      |
-        --------------------------[ k ]<-----------------------o<--------------------------------------
+           α      β             y1 + v  γ             y2          δ             y3  |               
+  x -->(+)--->(+)--->[ f1 (β) ]---->(+)--->[ f2 (γ) ]---->o-->(+)--->[ f3 (δ) ]---->o-->[ f4 (y3) ]--->o--> y4
+        ^ -    ^ +     (LP1)                 (LP2)        |    ^ +     (LP3)              (LP4)        |
+        |      |                                          |    |                                       |
+        |      --------------------------------------------    |                                       |
+        |                                                      |                                       |
+        --------------------------[ k ]<-----------------------o<---------------------------------------
 
-  At this point, I know x, y4, z1[n-1], z2[n-1], z3[n-1], z4[n-1] and I can easily get  α  =  x  -  k * y4
-  Knowing all zn (n = [1, 4]) I know the bn from functions fn (x).
-
-  Let's define  fn^-1 (y)  =  (y - bn) / an   (n = [1 , 4])  the reciproqual functions of fn (x).
-  Then:
-
-  y3  =  f4^-1 (y4)  =  (y4 - b4) / a4
-  δ   =  f3^-1 (y3)  =  (y3 - b3) / a3
-  y2  =  δ  -  y4
-
-  Now that I know y2, there are 2 ways of getting y1:
-    (1)  f2^-1 (y2) - y3
-    (2)  f1 (α + y2)
-
-  If I choose (1) where do I insert the non-linearities? Same issue as before. So option (2) and I can finally process
-  the input forwards and no longer backwards.
-  Plus, once non-linearities are involved, the ZDF equation no longer stands. So the values of y4, y3 and y2 obtained so
-  far are going to be used for feedback loops but other than that, they are temporary. I'll redefine them starting from the
-  input and taking the non-linearities into account so that said non-linearities can be stored in the z^-1 blocks.
-
-  /*
-    Inopinate digression:
-      I've read somewhere (called KVR) that ZDF and TPT are interchangeable expressions with exact same meaning...
-      Well the way I'm about to implement non-linearities is a counter-example of this peremptory statement.
-
-      ZDF = "Zero Delay Feedback".
-        So far, my filter has no delay in any of its feedback loops (only the integrators have z^-1 elements).
-        So this IS a ZDF filter.
-
-      TPT = "Topology Preserving Transform".
-        Naively inserting non-linearities at some points in the block diagram (like I'll do here) instead of solving non-linear ZDF equations
-        (through Newton-Raphson or such) does NOT preserve the topology.
-        That is: this filter (with naive implementation of non-linearities) doesn't have a strict counter-part in the analog realm.
-        I want the filter to sound good and behave nicely when modulated, while remaining CPU-friendly. I don't care this much for faithfulness.
-        After all it's called "[generic] Diode Ladder", not "TB-303 1:1 emulation"... So why not?
-     
-      Anyway, this is an example of a ZDF non-TPT filter. Which couldn't exist if these expressions were synonyms.
-      (I believe my point has been made, back to the filter.)
-  */
-
-  Now that y4, y3 and y2 are known, all feedback loops are solved, which means that the inputs of every 1-pole stage in the cascade is
-  known (or easy to find). The cascade can now be processed in a regular manner.
-
-  x  -=  k * y4;                      //  α
-  x  +=  y2;                          //  β
-  y1  =  (g2 * x  +  z1) / (1 + g2)
-  z1  =  y1 + y1 - z1
-
-  y1 +=  y3                           //  γ
-  y2  =  (g1 * y1  +  z2) / (1 + g2)
-  z2  =  y2 + y2 - z2
-
-  y2 +=  y4                           //  δ
-  y3  =  (g1 * y2  +  z3) / (1 + g2)
-  z3  =  y3 + y3 - z3
-
-  y4  =  (g1 * y3  +  z4) / (1 + g2)
-  z4  =  y4 + y4 - z4;
-
-
-////  Full algorithm
+  Even though it's already been deduced from the previous block diagram, this reduced form makes it really obvious that:
+    β  =  α + y2
+    γ  =  y1 + y3
+    δ  =  y2 + y4
   
+  (Assuming temporary y4, y3 and y2 are known), then the full cascade procedes as:
+    α   =  x  -  k * y4
+    β   =  α + y2
+    y1  =  f1 (β)          //  or directly  y1  =  f1 (x  -  k * y4  +  y2)
+    γ   =  y1 + y3
+    y2  =  f2 (γ)          //  or directly  y2  =  f2 (y1 + y3)
+    δ   =  y2 + y4
+    y3  =  f3 (δ)          //  or directly  y3  =  f3 (y2 + y4)
+    y4  =  f4 (y3)
+    z1  =  y1 + y1 - z1
+    z2  =  y2 + y2 - z2
+    z3  =  y3 + y3 - z3
+    z4  =  y4 + y4 - z4
 
 
 ######################################################################################################################################
