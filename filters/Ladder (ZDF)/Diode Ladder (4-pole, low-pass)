@@ -101,9 +101,9 @@
 ////  Normalising the pass-band
 
   Let's start by getting rid of the easy one.
-  It's a low-pass, so the pass-band amplitude is the amplitude when w -> 0.
+  It's a low-pass, so the pass-band amplitude is the amplitude when ω -> 0.
 
-  w = 0  =>  j * w / wc = 0  =>  s = 0
+  ω = 0  =>  jω / ωc = 0  =>  s = 0
 
   H(0) = 1 / (1 + k)    ;    abs (1 / (1 + k))  =  ( 1 / (1 + k) ) ^ (2 / 2)  =  1 / (1 + k)          //  Tons of extra-steps, I know. But I'm not really looking for k + 1.
   norm  =  1 / ( 1 / (1 + k) )  =  1 + k                                                              //  I'm explaining what it means. I would have really enjoyed someone
@@ -121,11 +121,11 @@
   Then, the amplitude response is 1 / |H(s)^1|. But the absolute value of a complex number is wrapped inside a gigantic square root, which I can simply
   ignore by evaluating |H(s)|^-2. I'm also assuming unit cutoff: what I'm looking for here will not rely on the cutoff frequency (quite the opposite actually).
 
-  H(jw)^-1    =  j*j*j*j * 0.5 * w^4  +  j*j*j * 4 * w^3  +  j*j * 10 * w^2  +  j * 8 * w  +  1  +  k          //  j*j = -1  ;  j*j*j = -j  ;  j*j*j*j = 1
-              =  ( 0.5 * w^4  -  10 * w^2  +  1  +  k)  +  j * ( 8 * w  -  4 * w^3 )
+  H(jω)^-1    =  j*j*j*j * 0.5 * ω^4  +  j*j*j * 4 * ω^3  +  j*j * 10 * ω^2  +  j * 8 * ω  +  1  +  k          //  j*j = -1  ;  j*j*j = -j  ;  j*j*j*j = 1
+              =  ( 0.5 * ω^4  -  10 * ω^2  +  1  +  k)  +  j * ( 8 * ω  -  4 * ω^3 )
 
-  |H(jw)|^-2  =  ( 0.5 * w^4  -  10 * w^2  +  1  +  k) ^ 2  +  ( 8 * w  -  4 * w^3 ) ^ 2
-              =  0.25 * w^8  +  6 * w^6  +  (k + 37) * w^4  -  (20 * k - 44) * w^2  +  k^2  +  2 * k  +  1
+  |H(jω)|^-2  =  ( 0.5 * ω^4  -  10 * ω^2  +  1  +  k) ^ 2  +  ( 8 * ω  -  4 * ω^3 ) ^ 2
+              =  0.25 * ω^8  +  6 * ω^6  +  (k + 37) * ω^4  -  (20 * k - 44) * ω^2  +  k^2  +  2 * k  +  1
 
   It's a 4th order polynomial whose variable is w^2 and whose coefficients are:
   a4 = 0.25    ;    a3 = 6    ;    a2 = k + 37    ;    a1 = -20 * k + 44    ;    a0 = k^2  +  2 * k  +  1
@@ -151,10 +151,10 @@
   |H(j)|     =  ( 1 / sqRt (2) ) ^ 3  =  2 ^ -3/2  =  1 / sqRt (8)
   |H(j)|^-1  =  sqRt (8)    ;    |H(j)|^-2  =  8
 
-  Since s = j * w / wc [1], scaling the cutoff by a factor "X" ("k" is already taken... ) is equivalent to dividing s by X, indeed:    //  [1] Well in theory s = sigma  +  j * omega
-  s'  =  j * w / (X * wc)   =>   s' * X  =  j * w / wc  =  s   =>   s'  =  s / X.                                                      //  and we assume sigma = 0 and wc = 1.
-                                                                                                                                       //  Then there are 2 steps to retrieve H(jw):
-  Assuming  w = wc = 1, then  H(s') = H(j / X)    ;    |H(j / X)|^-2  =  f(X ^ -2)                                                     //  s -> s / wc  then  s -> j * w
+  Since s = j * ω / ωc [1], scaling the cutoff by a factor "X" ("k" is already taken... ) is equivalent to dividing s by X, indeed:    //  [1] Well in theory s = σ + jω
+  s'  =  j * ω / (X * ωc)   =>   s' * X  =  j * ω / ωc  =  s   =>   s'  =  s / X.                                                      //  and we assume σ = 0 and ωc = 1.
+                                                                                                                                       //  Then there are 2 steps to retrieve H(jω):
+  Assuming  ω = ωc = 1, then  H(s') = H(j / X)    ;    |H(j / X)|^-2  =  f(X ^ -2)                                                     //  s -> s / ωc  then  s -> jω
   So I'm looking for   x  =  X ^ -2   that satisfies:                                                                                  //  (forgive me for taking a shortcut).
   
   f(x)  =  8
@@ -231,7 +231,7 @@
   y  =  D(s) * (x  -  k * y)   =>   y  =  D(s) * x  -  k * D(s) * y   =>   y * (1  +  k * D(s))  =  D(s) * x
 
                  D(s)                  1
-  H(s)  =  ----------------  =  ---------------          //  Notice that H(s)^-1  =  D(s)^-1  +  k
+  H(s)  =  ----------------  =  ---------------          //  Notice that  H(s)^-1  =  D(s)^-1  +  k
             1  +  k * D(s)       D(s)^-1  +  k
 
   So the poles of H(s) are the solutions to:
@@ -239,31 +239,31 @@
   D(s)^-1  +  k  =  0   <=>   D(s)^-1  =  -k   <=>   1  =  -k * D(s)   <=>   k * D(s)  =  -1
 
   Now we want a pole "p0" such that re (p0) = 0
-  That is a value of   s  =  sigma  +  j * omega   where sigma = 0
+  That is a value of   s  =  σ + jω   where σ = 0
 
-  That is we want   kMax * D(j * w)  =  -1   =>  (kMax * D(j * w))^-1  =  (-1)^-1  =  -1
+  That is we want   kMax * D(jω)  =  -1   =>  (kMax * D(jω))^-1  =  (-1)^-1  =  -1
 
-  Let's define:   den  =  D(j * w)^-1  =  H(j * w)^-1  -  k  =  ( 0.5 * w^4  -  10 * w^2  +  1 )  +  j * ( 8 * w  -  4 * w^3 )
+  Let's define:   den  =  D(jω)^-1  =  H(jω)^-1  -  k  =  ( 0.5 * ω^4  -  10 * ω^2  +  1 )  +  j * ( 8 * ω  -  4 * ω^3 )
 
-  Then   (kMax * D(j * w))^-1  =  den / kMax
+  Then   (kMax * D(jω))^-1  =  den / kMax
 
   k being a real positive number:   den / kMax  =  re (den) / kMax  +  im (den) / kMax
 
   Then:   den / kMax  =  -1   <=>   re (den) / kMax  =  -1   and   im (den) / kMax  =  0
   Or:     im (den)  =  0   and   kMax  =  -re (den)
 
-  First let's solve im (den) = 0  for w:
+  First let's solve im (den) = 0  for ω:
 
-  -4 * w^3  +  8 * w  =  0   <=>   w * (-4 * w^2  +  8)  =  0
-  w = 0  is an obvious solution but not an interesting one. So let's solve  -4 * w^2  +  8  =  0          //  a = -4  ;  b = 0  ;  c = 8
+  -4 * ω^3  +  8 * ω  =  0   <=>   ω * (-4 * ω^2  +  8)  =  0
+  ω = 0  is an obvious solution but not an interesting one. So let's solve  -4 * ω^2  +  8  =  0          //  a = -4  ;  b = 0  ;  c = 8
 
           -0 - sqRt ( 0^2  - 4 * (-4 * 8) )         - sqRt (128)
   r1  =  -----------------------------------  =  -----------------  =  sqRt (2)          //  Then obviously, r2 = -sqRt (2)
                       2 * (-4)                    - sqRt (4 * 16)
 
-  w = sqRt (2)   =>   re (den)  =  0.5 * ( sqRt (2) )^4  -  10 * ( sqRt (2) )^2  +  1  =  2  -  20  +  1  =  -17
+  ω = sqRt (2)   =>   re (den)  =  0.5 * ( sqRt (2) )^4  -  10 * ( sqRt (2) )^2  +  1  =  2  -  20  +  1  =  -17
 
-  kMax  =  -re (den)  = 17
+  kMax  =  -re (den)  =  17
 
   k  =  res * 17          //  Done!
 
@@ -272,10 +272,10 @@
 //  DIGITAL IMPLEMENTATION
 ////  Block diagram: replacing the integrators with trapezoidal integrators
 
-  wc  =  cutoff (Hz)        //  (assumed pre-warped)
+  ωc  =  cutoff (Hz)        //  (assumed pre-warped)
   T   =  1 / sRate          //  sRate  =  sampling rate
-  g1  =  wc * T / 2
-  g2  =  wc * T             //  2 * wc * T / 2  =  2 * g1
+  g1  =  ωc * T / 2
+  g2  =  ωc * T             //  2 * ωc * T / 2  =  2 * g1
 
         -------------o<--------------------------------
         |            |                    +     +     |
@@ -285,7 +285,7 @@
         |            |              |     [ z^-1 ]    |
         |            |              |   z4   |  [n-1] |
         |          - v              |      + v        |
-        |         H (+)--->[ g1 ]-->o------>(+)------>o--> y4
+        |         H (+)--->[ g1 ]-->o------>(+)------>o--> y4          //  H  =  G - y4  =  (y3 - y4) - y4  =  y3 [- 2 * y4]
         |          + ^                                |
         |            |                                v -
         |        (G) o<------------------------------(+)  G
@@ -297,7 +297,7 @@
         |            |              |     [ z^-1 ]    |
         |            |              |   z3   |  [n-1] |
         |          - v              |      + v        |
-        |         F (+)--->[ g1 ]-->o------>(+)------>o--> y3
+        |         F (+)--->[ g1 ]-->o------>(+)------>o--> y3          //  F  =  E - G  =  (y2 - y3) - (y3 - y4)  =  (y2 + y4) [- 2 * y3]
         v          + ^                                |
       [ k ]          |                                v -
         |        (E) o<------------------------------(+)  E
@@ -309,7 +309,7 @@
         |            |              |     [ z^-1 ]    |
         |            |              |   z2   |  [n-1] |
         |          - v              |      + v        |
-        |         D (+)--->[ g1 ]-->o------>(+)------>o--> y2
+        |         D (+)--->[ g1 ]-->o------>(+)------>o--> y2          //  D  =  C - E  =  (y1 - y2) - (y2 - y3)  =  (y1 + y3) [- 2 * y2]
         |          + ^                                |
         |            |                                v -
         |        (C) o<------------------------------(+)  C
@@ -322,7 +322,7 @@
         |            |              |   z1   |  [n-1] |
       - v          - v              |      + v        |
   x -->(+)--------->(+)--->[ g2 ]-->o------>(+)------>o--> y1
-        A            B
+        A            B                                                  //  B  =  A - C  =  A - (y1 - y2)  =  (A + y2) [- y1]
 
   At the beginning of the sample processing, the known points are x (imput sample) z1, z2, z3 and z4 (integrators' states).
   The first value I need is y4. If I isolate it, I'll be able to choose where to insert non-linearities:
@@ -332,6 +332,10 @@
   Let's reveal them by expanding the block diagram, with the goal of re-simplifying it with [ LPn ] blocks.     //  n = [1 , 4].
 
 ////  Expanded block diagram
+
+  By re-expressing B, D, F and H I've identified  A + y2 as the input of LP1,  y1 + y3 as the input of LP2,  y2 + y4 as
+  the input of LP3  and  y3 as the input of LP4.
+  Also LP2, LP3 and LP4 have a double feedback.
 
                     (y4)                  λ        (H)     (y3)
    y4 <-o<-----------o<------(+)<------o<---[ g1 ]<---(+)<------
@@ -454,6 +458,51 @@
     z3  =  y3 + y3 - z3
     z4  =  y4 + y4 - z4
 
+  Why temporary? If the filter were to remain linear, the values of y4, y3 and y2 computed at the very beginning
+  of the processing could be kept as is. It would even provide a fast way to get y1 ( f1^-1 (y2) - y3 ), then with
+  all outputs known, the the integrators' states could be updated, the filter would be working and the algorithm would
+  be much lighter.
+  But once non-linearities get injected in the signal path, one of the very principles of logic is broken since:
+
+    y4  !=  y4                    //    https://en.wikipedia.org/wiki/Law_of_identity
+
+  Re-defining y4, y3 and y2 is the only way (I can think of) to fix logic (this sentance makes me feel powerful... or maybe just presomptuous?)
+  and to store the non-linearities in z1, z2, z3 and z4 (whose computation relies on their respective outputs only).
+
+////  Finding feedback signals
+//////  Steps:
+
+  https://www.desmos.com/calculator/u38z1puhy9
+
+//////  Results:
+
+  g1  =  ωcT/2          //  forward gain 1
+  g2  =  g1 + g1        //  forward gain 2
+  g3  =  1 + g2         //  backward gain
+  g4  =  1 / g3         //  forward denominator
+  g5  =  1 / g1         //  backward denominator
+
+  ("Forward" means "from input to output" [ fn (x) ], "backward" means "from output to input" [ fn^-1 (y) ].)
+
+  fb_gX    =  2  -  6 * g1^2 * g4^2  +  4 * g1^4 * g4^4
+  fb_gZ4   =  g5^4 * g3^4  -  6 * g5^2 * g3  +  11 * g4  -  6 * g1^2 * g4^3
+  fb_gZ3   =  g5^3 * g3^2  -  5 * g5  +  8 * g1 * g4^2  -  4 * g1^3 * g4^4
+  fb_gZ2   =  g5^2 * g3  -  3 * g4  +  2 * g1^2 * g4^3
+  fb_gZ1   =  g5  -  3 * g1 * g4^2  +  2 * g1^3 * g4^4
+  fb_gDen  =  g5^4 * g3^4  -  7 * g5^2 * g3^2  +  16  -  14 * g1^2 * g4^2  +  4 * g1^4 * g4^4  +  k * fb_gX
+
+          fb_gX * x  +  fb_gZ4 * z4  +  fb_gZ3 * z3  +  fb_gZ2 * z2  +  fb_gZ1 * z1
+  y4  =  ---------------------------------------------------------------------------
+                                           fb_gDen
+
+  y3  =  (g3 * y4  -  z4) * g5
+  y2  =  (g3 * y3  -  z3) * g5  -  y4
+
+
+######################################################################################################################################
+//  FULL ALGORITHM
+
+
 
 ######################################################################################################################################
 ======================================================================================================================================
@@ -557,9 +606,9 @@
   I'll try to explain why.
 
   The variable s is used in the Laplace transform to map a function from the (real) time domain to the (complex) frequency domain.
-  s  =  sigma  +  j * omega
-  If the signal is a pure sinusoid, sigma = 0. We evaluate transfer functions on pure sinusoids, hence " s = j * w ".
-  But once the filter is dropped in the real world, sigma is back.
+  s  =  σ + jω
+  If the signal is a pure sinusoid, σ = 0. We evaluate transfer functions on pure sinusoids, hence " s = jω ".
+  But once the filter is dropped in the real world, σ is back.
   The formula of the Laplace transform is the integration over time of the original function multiplied by:
 
   exp (-s * t)    where "t" is time (the real variable of the original time domain function).
