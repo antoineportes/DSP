@@ -498,6 +498,41 @@
   y3  =  (g3 * y4  -  z4) * g5
   y2  =  (g3 * y3  -  z3) * g5  -  y4
 
+// Cutoff pre-warping
+
+  Bilinear Transform maps the j axis in the s domain to the unit circle in the z domain, and the interval [0 , +inf.]
+  to [0 , Nyquist].                                                         //  https://en.wikipedia.org/wiki/Nyquist_frequency
+  (BLT is how trapezoidal integrators are built, see Annexe 3.)
+  
+  This mapping introduces a phenomenon called frequency warping.
+  Which means that our digital transfer function does not have the same response as the analog one for any frequency (apart from DC):
+  since +inf. is mapped to Nyquist, when the frequency tends to Nyquist, the digital transfer function tends to its analog
+  counterpart's value when the frequency tends to +inf. and the warping becomes obvious.
+
+  Let T be the sampling period (in seconds). ((That is 1 / samplerate.))
+  Let f be a frequency in Hz.
+  If ωd is the same frequency in radians, then  ωd  =  2 * pi * f
+  If ωa is the value (in radians) at which the BLT's warping maps ωd, then:
+
+          2         / ωd * T \       2         / 2 * pi * f * T \
+  ωa  =  --- * tan ( -------- )  =  --- * tan ( ---------------- )          //  https://en.wikipedia.org/wiki/Bilinear_transform#Frequency_warping
+          T         \    2   /       T         \        2       /
+
+  In order for the digital transfer function to have the same values (amplitude and phase) at the cutoff frequency, I need
+  to apply the inverse warping to the filter's cutoff.
+  Then:
+          2            / 2 * pi * Hz * T \        pi           //  Hz is the user-facing cutoff (in Hz).
+  ωc  =  --- * arcTan ( ----------------- )  mod ----          //  pi / T  =  pi * samplerate  =  2 * pi * samplerate / 2  =  Nyquist (in radians)
+          T            \        2        /         T
+
+  Since the gain in trapezoidal integrators is not ωc but ωcT/2:
+  Then:
+             2            / 2 * pi * Hz * T \     T
+  ωcT/2  =  --- * arcTan ( ----------------- ) * ---          //  Assuming Hz < Nyquist, I can drop the modulus.
+             T            \        2        /     2
+
+  which simplifies as:    ωcT/2  =  arcTan (PI_SRATE * Hz)    with  PI_SRATE  =  pi / samplerate
+
 
 ######################################################################################################################################
 //  FULL ALGORITHM
