@@ -535,7 +535,36 @@
 
 
 ######################################################################################################################################
-//  FULL ALGORITHM
+//  FULL ALGORITHM          [in progress]
+////  Parameters
+
+  Hz   :=  "Cutoff (Hz)"
+  res  :=  "Resonance"
+
+////  Init
+
+  PI_SRATE  =  pi / sRate;                   //  sRate = sampling frequency
+  r4        =  2.65565947517041966654;
+
+////  Parameters update
+
+  //////  Cutoff
+  res2    =  res * res;          //  Curve refinement
+  tmp1    =  res2 * -0.5;
+  tmp2    =  1 - res2;
+  loop (2,  tmp2 *= tmp2);
+  offset  =  pow (2, tmp1) * pow (r4, tmp2);
+
+  wc  =  Hz * offset;
+  g1  =  aTan (PI_SRATE * wc);
+  g2  =  g1 + g1;
+  g3  =  1 + g2;
+  g4  =  1 / g3;
+  g5  =  1 / g1;
+
+  //////  Feedback
+  k     =  res2 * 17;
+  norm  =  k + 1;
 
 
 
