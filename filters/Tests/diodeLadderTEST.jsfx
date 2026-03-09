@@ -1,0 +1,363 @@
+desc:diodeTest (0im's filtering)
+/*
+  LICENSE:
+  
+    MIT License
+    
+    Copyright (c) 2026 Antoine Portes
+    
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+    
+    The above copyright notice and this permission notice shall be included in all
+    copies or substantial portions of the Software.
+    
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+    SOFTWARE.
+  
+  
+  MANUAL:
+  
+    This plugin solely aims at testing the designed filter (see source).
+    It has no non-linearities, no parameter smoothing, no user interface, no oversampling (Reaper provides native FIR OS though).
+    
+    Plugin developers often rely on free papers randomly happening to pop-up on the internet.
+    This design can be regarded as just another free paper... But I rather meant it as an example / tutorial
+    on how to free oneself from depending on randomness.
+  
+*/
+
+source:   https://github.com/antoineportes/DSP/blob/main/filters/Ladder%20(ZDF)/Diode%20Ladder%20(4-pole%2C%20low-pass)
+author:   Antoine Portes
+license:  MIT
+
+
+
+/*########################################################
+==================     PARAMETERS     ====================
+########################################################*/
+slider1:TEST.Hz=666<20,17000,.1:log=666>Cutoff (Hz): 
+slider2:res=0<0,1,.001>Resonance: 
+slider3:TEST.justForFun=0<0,1,1{nope,yep}>Monitor feedback? 
+
+
+
+/*########################################################
+==================      IN/OUT        ====================
+########################################################*/
+in_pin:input L
+in_pin:input R
+out_pin:output L
+out_pin:output R
+
+
+
+/*########################################################
+==================        INIT        ====================
+########################################################*/
+@init
+  ext_noInit = 1;
+
+  //  Constants
+  ////  Pseudo-booleans
+  TRUE  = (1 === 1);
+  FALSE = (1 !== 1);
+  ////  Cutoff computation
+  //PI_SRATE = 3.14159265358979323846 / sRate;
+  SRATE_PI = sRate / 3.14159265358979323846;      //  Better approximation (?)
+  ////  Cutoff normalisation
+  r4 = 2.65565947517041966654;
+  ////  Anti-denormal threshold
+  epsilon = 2;
+  loop (50, epsilon *= 2);
+  epsilon = 1 / epsilon;        //  2^-51  
+  /*
+    If fast computation is prefered over precision:
+    
+    [code]
+      epsilon = 2;
+      loop (5, epsilon *= epsilon);
+      epsilon = 1 / epsilon;
+    [/code]
+    
+    gives:    1 / 2^(2^5)  =  2^-32  ~=  2.328306e-10
+  */
+  ////  Dummy variable for further implementations including oversampling
+  os.factor = 1;
+  ////  Max user-facing cutoff
+  /*
+    Bounding the cutoff so that Hz * offset <= Nyquist
+    Max offset is r4:   https://www.desmos.com/calculator/j45xxvjnrd
+    So:
+      aTan2 (HzMax * r4, SRATE_PI * os.factor)  =  aTan2 ( (sRate * os.factor) / 2, SRATE_PI * os.factor )
+      (HzMax * r4) / ((sRate / $pi) * os.factor)  =  ( (sRate * os.factor) / 2 ) / ((sRate / $pi) * os.factor)
+      HzMax * r4  =  (sRate * os.factor) / 2
+  */
+  HzMax = (sRate * os.factor) / (2 * r4);
+  /*
+    Min offset is 1 / sqRt (2).
+    So:
+      aTan2 (HzMin * pow (2, -.5), SRATE_PI * os.factor)  =  epsilon
+      HzMin  =  tan (epsilon) * SRATE_PI * os.factor * sqRt (2)
+      
+      tan (epsilon) gives a very bad approximation... Better use a constant.
+      10 Hz seems safe and not really limiting.
+  */
+  
+  //  Slider conditioning
+  ////  Branch
+  function getLast ()
+  (
+    this.last != this  ?  TRUE  :  FALSE;
+  );
+  function setLast ()
+  (
+    this.last = this;
+  );
+  ////  Bind
+  function range (x*, xMin, xMax)
+  (
+    x  =  max (xMin, min (x, xMax));
+  );
+  
+  //  Diode Ladder generic functions
+  //      (diodeLin_[...] where "Lin" stands for "linear". Update functions if non-linearities get involved.)
+  ////  Update cutoff offset 
+  function diodeLin_updtOffset ()
+    global (r4)
+    instance (res offset)
+    local (tmp1 tmp2)
+  (
+    tmp1    = res * -0.5;
+    tmp2    = 1 - res;    loop (2, tmp2 *= tmp2);   //  (1 - res)^4
+    
+    offset  = pow (2, tmp1) * pow (r4, tmp2);
+  );
+  ////  Update main gains and denominators
+  function diodeLin_updtCutoff ()
+    global (HzMax SRATE_PI os.factor)
+    instance (Hz offset g1 g2 g3 g4 g5)
+    local (fc)
+  (
+    range (Hz, 10, HzMax);
+    fc  = offset * Hz;
+    //////  Forward gains
+    g1  = aTan2 (fc, SRATE_PI * os.factor);   //  SRATE_PI * os.factor is a pseudo-constant, it should be pre-computed when sRate or os.factor changes.
+    g2  = g1 + g1;
+    //////  Backward gain
+    g3  = 1 + g2;
+    //////  Forward denominator
+    g4  = 1 / g3;
+    //////  Backward denominator
+    g5  = 1 / g1;
+  );
+  ////  Update feedback gains and denominator
+  function diodeLin_updtRes ()
+    instance (k res norm g1 g2 g3 g4 g5 FB_gX FB_gZ4 FB_gZ3 FB_gZ2 FB_gZ1 FB_den)
+    local (g1p2 g1p3 g4p2 g4p3 g4p4 g3p2 g3p3 g5p2 g5p4 g_1142 g_1242 g_1243 g_1344 g_1444 g_5231 g_5232 g_5332 g_5433 g_5434)
+  (
+    //  Negative feedback gain
+    k       = res * 17;
+    //  Pass-band normalisation
+    norm    = k + 1;
+    //  y4 ZDF equation
+    ////  Temporary variables (avoid multiple computation)
+    g1p2  = g1 * g1;    g1p3  = g1p2 * g1;
+    g4p2  = g4 * g4;    g4p3  = g4p2 * g4;    g4p4  = g4p3 * g4;
+    g3p2  = g3 * g3;    g3p3  = g3p2 * g3;
+    g5p2  = g5 * g5;    g5p4  = g5p2 * g5p2;
+    g_1142  = g1 * g4p2;
+    g_1242  = g1 * g_1142;
+    g_1243  = g_1242 * g4;
+    g_1344  = g1p3 * g4p4;
+    g_1444  = g1 * g_1344;
+    g_5231  = g5p2 * g3;
+    g_5232  = g_5231 * g3;
+    g_5332  = g5 * g_5232;
+    g_5433  = g5p4 * g3p3;
+    g_5434  = g_5433 * g3;
+    ////  Actual equation
+    FB_gX   = 2  -  6 * g_1242  +  4 * g_1444;
+    FB_gZ4  = g_5433  -  6 * g_5231  +  11 * g4  -  6 * g_1243;
+    FB_gZ3  = g_5332  -  5 * g5  +  8 * g_1142  -  4 * g_1344;
+    FB_gZ2  = g_5231  -  3 * g4  +  2 * g_1243;
+    FB_gZ1  = g5  -  3 * g_1142  +  2 * g_1344;
+    FB_den  = g_5434  -  7 * g_5232  +  16  -  14 * g_1242  +  4 * g_1444  +  k * FB_gX;
+    FB_den  = 1 / FB_den;
+  );
+  ////  Transposed Direct Form II (tdf2)
+  //////  1-pole LP
+  ////////  Backward
+  function tdf2_1pole_LP_BW (y, z, _g, _den)
+    local (x)
+  (
+    x = (_g * y  -  z) * _den;
+    //  return
+    x;
+  );
+  ////////  Forward
+  function tdf2_1pole_LP (x, z*, g, den)
+    global (epsilon)
+    local (y)
+  (
+    y = (g * x  +  z) * den;
+    z = y + y - z;
+    abs (z) < epsilon  ?  z = 0;
+    //  return
+    y;
+  );
+  //////  4-pole Diode Ladder LP 
+  function tdf2_diodeLin (x, z1*, z2*, z3*, z4*)
+    global (monFB monFF)        //    "monitor FeedBack" and "monitor FeedForward" both pseudo-bool flags set @slider.
+    instance (norm FB_gX FB_gZ4 FB_gZ3 FB_gZ2 FB_gZ1 FB_den k g1 g2 g3 g4 g5)
+    local (y4 y3 y2 FB y1)
+  (
+    //  Normalise pass-band
+    x    *= norm;
+    
+    //  Get feedback signals
+    ////  y4
+    y4    = FB_gX * x  +  FB_gZ4 * z4  +  FB_gZ3 * z3  +  FB_gZ2 * z2  +  FB_gZ1 * z1;
+    y4   *= FB_den;
+    ////  y3
+    y3    = tdf2_1pole_LP_BW (y4, z4, g3, g5);
+    ////  y2
+    y2    = tdf2_1pole_LP_BW (y3, z3, g3, g5)  -  y4; 
+    //  Main negative feedback
+    FB    = k * y4;
+    x    -= fb; 
+    //  LP 1
+    ////  Positive feedback
+    x    += y2;
+    ////  Filter
+    y1    = tdf2_1pole_LP (x, z1, g2, g4); 
+    //  LP 2
+    ////  Positive feedback
+    y1   += y3;
+    ////  Filter
+    y2    = tdf2_1pole_LP (y1, z2, g1, g4); 
+    //  LP 3
+    ////  Positive feedback
+    y2   += y4;
+    ////  Filter
+    y3    = tdf2_1pole_LP (y2, z3, g1, g4); 
+    //  LP 4
+    ////  Filter
+    y4    = tdf2_1pole_LP (y3, z4, g1, g4); 
+    //  return
+    FB * monFB  +  y4 * monFF;
+  );
+  
+  //  Diode Ladder instance ("TEST") function
+  ////  Transposed Direct Form II
+  function TEST_apply ()
+  (
+    this = TEST.tdf2_diodeLin (this, this.TEST.z1, this.TEST.z2, this.TEST.z3, this.TEST.z4);
+  );
+  ////  Reset
+  function TEST_reset ()
+  (
+    this.TEST.z1 = this.TEST.z2 = this.TEST.z3 = this.TEST.z4 = 0;
+  );
+  
+  //  Initialise miscellaneous (non-zero) variables
+  sRate.last            = sRate;    //  Avoids re-computing everything on first block.
+  res.last              = -1;       //  Lets @slider initialise the filter (any non-zero value would do).
+  TEST.justForFun.last  = -1;
+  L.TEST_reset ();
+  R.TEST_reset ();
+
+
+
+/*########################################################
+==================       SLIDER       ====================
+########################################################*/
+@slider
+  res.getLast () ?
+  (
+    range (res, 0, 1);
+    TEST.res  = res * res;    //  Curve refinement.
+    
+    UPDATE_OFFSET   = TRUE;
+    res.setLast ();
+  );
+  
+  TEST.Hz.getLast () ?
+  ( 
+    UPDATE_CUTOFF   = TRUE;
+    res.setLast ();
+  );
+  
+  UPDATE_OFFSET ?
+  (
+    TEST.diodeLin_updtOffset ();
+    
+    UPDATE_OFFSET = FALSE;
+    UPDATE_CUTOFF = TRUE;
+  );
+  
+  UPDATE_CUTOFF ?
+  (
+    TEST.diodeLin_updtCutoff ();
+    
+    UPDATE_CUTOFF   = FALSE;
+    UPDATE_FEEDBACK = TRUE;
+  );  
+  
+  UPDATE_FEEDBACK ?
+  (
+    TEST.diodeLin_updtRes ();
+    
+    UPDATE_FEEDBACK = FALSE;
+  );
+  
+  TEST.justForFun.getLast () ?
+  (
+    range (TEST.justForFun, 0, 1);
+    TEST.justForFun = 0|TEST.justForFun;
+    
+    monFF = !TEST.justForFun;
+    monFB = !monFF;
+    
+    TEST.justForFun.setLast ();
+  );
+
+
+
+/*########################################################
+==================        BLOCK       ====================
+########################################################*/
+@block
+  sRate.getLast () ?
+  (
+    SRATE_PI  = sRate / 3.14159265358979323846;
+    HzMax     = (sRate * os.factor) / (2 * r4);
+    L.TEST_reset ();
+    R.TEST_reset ();
+    
+    sRate.setLast ();
+  );
+
+
+
+/*########################################################
+==================       SAMPLE       ====================
+########################################################*/
+@sample
+  L = spl0;
+  R = spl1;
+  
+  L.TEST_apply ();
+  R.TEST_apply ();
+  
+  spl0  = L;
+  spl1  = R;
