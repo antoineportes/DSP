@@ -217,7 +217,7 @@ out_pin:output R
   );
   //////  4-pole Diode Ladder LP 
   function tdf2_diodeLin (x, z1*, z2*, z3*, z4*)
-    global (monFB monFF)        //    "monitor FeedBack" and "monitor FeedForward" both pseudo-bool flags set @slider.
+    global (monFB monFF)        //    "monitor FeedBack" and "monitor FeedForward".
     instance (norm FB_gX FB_gZ4 FB_gZ3 FB_gZ2 FB_gZ1 FB_den k g1 g2 g3 g4 g5)
     local (y4 y3 y2 FB y1)
   (
