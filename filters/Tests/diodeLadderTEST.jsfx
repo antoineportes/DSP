@@ -95,7 +95,7 @@ out_pin:output R
   os.factor = 1;
   ////  Max user-facing cutoff
   /*
-    Bounding the cutoff so that Hz * offset <= Nyquist
+    Binding the cutoff so that Hz * offset <= Nyquist
     Max offset is r4:   https://www.desmos.com/calculator/j45xxvjnrd
     So:
       aTan2 (HzMax * r4, SRATE_PI * os.factor)  =  aTan2 ( (sRate * os.factor) / 2, SRATE_PI * os.factor )
