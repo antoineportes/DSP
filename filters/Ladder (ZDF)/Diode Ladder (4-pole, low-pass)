@@ -37,7 +37,7 @@
   First it's upside-down (input at the bottom output at the top) because all schematics I've found display the ladder this way.
   Then I understood the reason for the halving gains (in the book): most Diode ladder VCFs have 4 capacitors in parallel.
   The 2nd, 3rd and 4th ones have equal capacitance and the first one has approximately half this capacitance.
-  The cutoff frequency of a 1-pole RC circuit is wc (Hz) = 1 / (2 * pi * R * C), so doubling C is halving the cutoff.
+  The cutoff frequency of a 1-pole RC circuit is ωc (Hz) = 1 / (2 * pi * R * C), so doubling C is halving the cutoff.
   The cutoff gain can (mathematically) be extracted of the integrator. Which is what Vadim did by adding gains of 1 / 2 before integrators 2 to 4.
   By doing so he also decided that the reference-cutoff was the one of the first filter in the cascade.  This makes sense for high values of k,
   since this frequency is the closest to the resonance peak, but with k -> 0 the curve of the amplitude response looks shifted to the left.
@@ -127,7 +127,7 @@
   |H(jω)|^-2  =  ( 0.5 * ω^4  -  10 * ω^2  +  1  +  k) ^ 2  +  ( 8 * ω  -  4 * ω^3 ) ^ 2
               =  0.25 * ω^8  +  6 * ω^6  +  (k + 37) * ω^4  -  (20 * k - 44) * ω^2  +  k^2  +  2 * k  +  1
 
-  It's a 4th order polynomial whose variable is w^2 and whose coefficients are:
+  It's a 4th order polynomial whose variable is ω^2 and whose coefficients are:
   a4 = 0.25    ;    a3 = 6    ;    a2 = k + 37    ;    a1 = -20 * k + 44    ;    a0 = k^2  +  2 * k  +  1
 
   To simplify even further, let's define:  f(x)  =  a4 * x^4  +  a3 * x^3  +  a2 * x^2  +  a1 * x  +  a0
@@ -151,11 +151,22 @@
   |H(j)|     =  ( 1 / sqRt (2) ) ^ 3  =  2 ^ -3/2  =  1 / sqRt (8)
   |H(j)|^-1  =  sqRt (8)    ;    |H(j)|^-2  =  8
 
-  Since s = j * ω / ωc [1], scaling the cutoff by a factor "X" ("k" is already taken... ) is equivalent to dividing s by X, indeed:    //  [1] Well in theory s = σ + jω
-  s'  =  j * ω / (X * ωc)   =>   s' * X  =  j * ω / ωc  =  s   =>   s'  =  s / X.                                                      //  and we assume σ = 0 and ωc = 1.
-                                                                                                                                       //  Then there are 2 steps to retrieve H(jω):
-  Assuming  ω = ωc = 1, then  H(s') = H(j / X)    ;    |H(j / X)|^-2  =  f(X ^ -2)                                                     //  s -> s / ωc  then  s -> jω
-  So I'm looking for   x  =  X ^ -2   that satisfies:                                                                                  //  (forgive me for taking a shortcut).
+  Since s = j * ω / ωc [1], scaling the cutoff by a factor "X" ("k" is already taken... ) is equivalent to dividing s by X, indeed:        //  [1] Well in theory s = σ + jω
+  s'  =  j * ω / (X * ωc)   =>   s' * X  =  j * ω / ωc  =  s   =>   s'  =  s / X.                                                          //  and we assume σ = 0 and ωc = 1.
+                                                                                                                                           //  Then there are 2 steps to retrieve H(jω):
+  Assuming  ω = ωc = 1, then  H(s') = H(j / X).                                                                                            //  s -> s / ωc  then  s -> jω
+                                                                                                                                           //  (forgive me for taking a shortcut).
+  |H(j / X)|^-2  =  0.25 * (1 / X)^8  +  6 * (1 / X)^6  +  (k + 37) * (1 / X)^4  -  (20 * k - 44) * (1 / X)^2  +  k^2  +  2 * k  +  1
+
+  =  0.25 * (X^-1)^(2 * 4)  +  6 * (X^-1)^(2 * 3)  +  (k + 37) * (X^-1)^(2 * 2)  -  (20 * k - 44) * (X^-1)^(2 * 1)  +  k^2  +  2 * k  +  1
+
+  =  0.25 * (X^-2)^4  +  6 * (X^-2)^3  +  (k + 37) * (X^-2)^2  -  (20 * k - 44) * (X^-2)  +  k^2  +  2 * k  +  1
+
+  =  a4 * (X^-2)^4  +  a3 * (X^-2)^3  +  a2 * (X^-2)^2  +  a1 * (X^-2)  +  a0
+
+  =  f (X^-2)
+  
+  So I'm looking for   x  =  X ^ -2   that satisfies:                                                                                  
   
   f(x)  =  8
   i.e.:
@@ -170,9 +181,9 @@
 
   4 solutions for x, all real, only 1 positive:
 
-  x  ~=  0.14179314234833113261691421060332052245158131594926643565238651341810209390310453246542978199240153344619876644043915403722390
+  x  ≈  0.14179314234833113261691421060332052245158131594926643565238651341810209390310453246542978199240153344619876644043915403722390
 
-  X  ~=  2.6556594751704196665429387519819458709301120493092940694695407222354410927277808234563306659372734474270085121801816691888392
+  X  ≈  2.6556594751704196665429387519819458709301120493092940694695407222354410927277808234563306659372734474270085121801816691888392
 
   Enough is a sub-domain of too much.
 
@@ -188,7 +199,7 @@
   But I have plotted Vadim's prototype and found that its resonance peak happens at a decent place. Since his cutoff is basically half mine, I started by
   plotting my proto-prototype with k close to explosion and the cutoff multiplied by g = 0.5. The curve was still shifted left to my taste.
   For lack of a better idea I slowly increased g (using Desmos' slider) hoping for some magic to happen. As expected, magic happened.
-  At some point I found the curve visually right at its place. Looking at the value reached by g I recognise the very well known number: 0.707.
+  At some point I found the curve visually right at its place. Looking at the value reached by g I recognised the very well known number: 0.707.
   I don't understand why but it can't be a coincidence. So when k = kMax (that is res = 1), I want my cutoff multiplied by 1 / sqRt (2).
   Since I already have a factor for when k = 0, this one (I'll keep calling it g for the moment) can start at g = 1 = 2^0.
   When  res = 1,  -res / 2 = -1 / 2    ;    when  res = 0,  -res / 2 = 0.
@@ -333,8 +344,8 @@
 
 ////  Expanded block diagram
 
-  By re-expressing B, D, F and H I've identified  A + y2 as the input of LP1,  y1 + y3 as the input of LP2,  y2 + y4 as
-  the input of LP3  and  y3 as the input of LP4.
+  By re-expressing B, D, F and H I've identified  A + y2  as the input of LP1,  y1 + y3  as the input of LP2,  y2 + y4  as
+  the input of LP3  and  y3  as the input of LP4.
   Also LP2, LP3 and LP4 have a double feedback.
 
                     (y4)                  λ        (H)     (y3)
@@ -464,7 +475,7 @@
   be much lighter.
   But once non-linearities get injected in the signal path, one of the very principles of logic is broken since:
 
-    y4  !=  y4                    //    https://en.wikipedia.org/wiki/Law_of_identity
+    y4  ≠  y4                    //    https://en.wikipedia.org/wiki/Law_of_identity
 
   Re-defining y4, y3 and y2 is the only way (I can think of) to fix logic (this sentance makes me feel powerful... or maybe just presomptuous?)
   and to store the non-linearities in z1, z2, z3 and z4 (whose computation relies on their respective outputs only).
@@ -514,28 +525,35 @@
   If ωd is the same frequency in radians, then  ωd  =  2 * pi * f
   If ωa is the value (in radians) at which the BLT's warping maps ωd, then:
 
-          2         / ωd * T \       2         / 2 * pi * f * T \
-  ωa  =  --- * tan ( -------- )  =  --- * tan ( ---------------- )          //  https://en.wikipedia.org/wiki/Bilinear_transform#Frequency_warping
-          T         \    2   /       T         \        2       /
+          2         / ωd * T \       2         / 2 * π * f * T \
+  ωa  =  --- * tan ( -------- )  =  --- * tan ( --------------- )          //  https://en.wikipedia.org/wiki/Bilinear_transform#Frequency_warping
+          T         \    2   /       T         \       2       /
 
   In order for the digital transfer function to have the same values (amplitude and phase) at the cutoff frequency, I need
   to apply the inverse warping to the filter's cutoff.
   Then:
-          2            / 2 * pi * Hz * T \        pi           //  Hz is the user-facing cutoff (in Hz).
-  ωc  =  --- * arcTan ( ----------------- )  mod ----          //  pi / T  =  pi * samplerate  =  2 * pi * samplerate / 2  =  Nyquist (in radians)
-          T            \        2        /         T
+          2            / 2 * π * Hz * T \        π           //  Hz is the user-facing cutoff (in Hz).
+  ωc  =  --- * arcTan ( ---------------- )  mod ---          //  π / T  =  π * samplerate  =  2 * π * samplerate / 2  =  Nyquist (in radians)
+          T            \       2        /        T
 
   Since the gain in trapezoidal integrators is not ωc but ωcT/2:
   Then:
-             2            / 2 * pi * Hz * T \     T
-  ωcT/2  =  --- * arcTan ( ----------------- ) * ---          //  Assuming Hz < Nyquist, I can drop the modulus.
-             T            \        2        /     2
+             2            / 2 * π * Hz * T \     T
+  ωcT/2  =  --- * arcTan ( ---------------- ) * ---          //  Assuming Hz < Nyquist, I can drop the modulus.
+             T            \        2       /     2
 
-  which simplifies as:    ωcT/2  =  arcTan (PI_SRATE * Hz)    with  PI_SRATE  =  pi / samplerate
+  which simplifies as:    ωcT/2  =  arcTan (PI_SRATE * Hz)    with  PI_SRATE  =  π / samplerate
 
 
 ######################################################################################################################################
-//  FULL ALGORITHM          [in progress]
+//  FULL (minimalst) ALGORITHM
+  //    This is as basic as can be: mono signal, linear processing, no optimisation (some values are computed several times,
+  //    no conditional branching in parameter update, every variable is a global...)
+  //
+  //    For an example of optimisation, see:
+  //
+  //    https://github.com/antoineportes/DSP/blob/main/filters/Tests/diodeLadderTEST.jsfx
+
 ////  Parameters
 
   Hz   :=  "Cutoff (Hz)"
@@ -543,7 +561,7 @@
 
 ////  Init
 
-  PI_SRATE  =  pi / sRate;                   //  sRate = sampling frequency
+  PI_SRATE  =  π / sRate;                   //  sRate = sampling frequency
   r4        =  2.65565947517041966654;
 
 ////  Parameters update
@@ -552,7 +570,7 @@
   res2    =  res * res;          //  Curve refinement
   tmp1    =  res2 * -0.5;
   tmp2    =  1 - res2;
-  loop (2,  tmp2 *= tmp2);
+  loop (2,  tmp2 *= tmp2);       //  (1 - res2)^4
   offset  =  pow (2, tmp1) * pow (r4, tmp2);
 
   wc  =  Hz * offset;
@@ -566,6 +584,115 @@
   k     =  res2 * 17;
   norm  =  k + 1;
 
+  fb_gX    =  2  -  6 * g1^2 * g4^2  +  4 * g1^4 * g4^4;
+  fb_gZ4   =  g5^4 * g3^4  -  6 * g5^2 * g3  +  11 * g4  -  6 * g1^2 * g4^3;
+  fb_gZ3   =  g5^3 * g3^2  -  5 * g5  +  8 * g1 * g4^2  -  4 * g1^3 * g4^4;
+  fb_gZ2   =  g5^2 * g3  -  3 * g4  +  2 * g1^2 * g4^3;
+  fb_gZ1   =  g5  -  3 * g1 * g4^2  +  2 * g1^3 * g4^4;
+  fb_den  =  g5^4 * g3^4  -  7 * g5^2 * g3^2  +  16  -  14 * g1^2 * g4^2  +  4 * g1^4 * g4^4  +  k * fb_gX;
+  fb_den  =  1 / fb_den;
+
+////  Sample processing
+
+  //////  Normalise input
+  input  *=  norm;
+
+  //////  Feedback signals
+  ////////  y4
+  y4   =  fb_gX * input  +  fb_gZ4 * z4  +  fb_gZ3 * z3  +  fb_gZ2 * z2  +  fb_gZ1 * z1;
+  y4  *=  fb_den;
+
+  ////////  y3
+  y3   =  (g3 * y4  -  z4) * g5;
+
+  ////////  y2
+  y2   =  (g3 * y3  -  z3) * g5  -  y4;
+
+  //////  Diode Ladder
+  ////////  Negative feedback
+  input  -=  k * y4;
+
+  ////////  LP 1
+  input  +=  y2;
+  y1      =  (g2 * input  +  z1) * g4;
+  z1      =  y1 + y1 - z1;
+
+  ////////  LP 2
+  y1     +=  y3;
+  y2      =  (g1 * y1  +  z2) * g4;
+  z2      =  y2 + y2 - z2;
+
+  ////////  LP 3
+  y2     +=  y4;
+  y3      =  (g1 * y2  +  z3) * g4;
+  z3      =  y3 + y3 - z3;
+
+  ////////  LP 4
+  y4      =  (g1 * y3  +  z4) * g4;
+  z4      =  y4 + y4 - z4;
+
+  //////  Done.
+  output  =  y4;
+
+
+######################################################################################################################################
+//  Self-criticism
+
+  ////  maxHz
+  When k = 0, the cutoff gets multiplied by r4, which equals almost 8/3, so for instance a user-facing cutoff of 12 kHz actually corresponds
+  to almost 32 kHz.
+  In order for the actual cutoff not to exceed Nyquist, the user-facing cutoff must be clamped to:  maxHz  =  Nyquist / r4.
+  This gives (for instance) a maximum of  ≈ 18074.61 Hz  at a sampling rate of 96 kHz.
+
+  It's a deplorable limitation. One obvious solution is the brute-force solution: oversampling.
+  In case of non-linearities, some anti-aliasing process is well advised anyway. Oversampling raises Nyquist and takes care of both issues...
+  Not that much brute-force after all (2 problems / 1 solution make the filter clever again).
+
+  There could be a more elegant alternative: a decramped topology.
+  Yuriy Ivanstov published this paper:    https://ivantsovy.com/research/paper1.pdf
+  where he builds a topology of 1st and 2nd order filters with adjustable decramping.
+  I recommend this article, it's written in a very neat and pleasant way: anything necessary is written, anything written is necessary.
+  I've implemented his 1-pole filters in JSFX, they work perfectly.
+
+  [[  If you don't understand what follows, reading Annexe 3 could help.  ]]
+  They're not ZDF filters, which is a problem because the current Diode Ladder filter relies on several ZDF equations (LP 1, LP 2, LP3 and LP 4
+  could use traditional BLT, but the feedback signals can not be guessed from a digital transfer function).
+  Of course I could apply a z-transform to the analog transfer function and then solve Yuriy's equation 2.5 to find an equivalent σ that applies
+  to the Diode Ladder. But this would be a hardcore revision of the design and even though I haven't tried, my guts tell me that a global feedback
+  on a 4-pole filter would end up with formulae slightly uglier than Yuriy's. Plus there's a reason why we impement high-order digital filters as
+  stacks (cascades) of lower-order filters: approximation errors. A straight 4-pole is ill-advised in this regard.
+  Finally ZDF is not a random choice here: Ladder filters are typically synthesiser filters, often modulated by LFOs or envelope generators,
+  potentially at audio rate.
+
+  Then there's this article by Andy "Cytomic" Simper:    https://cytomic.com/files/dsp/matched-svf1-ivanstov.pdf
+  where Yuriy's topology is derived to implement an SVF 1-pole filter.
+  I haven't tried implenting it but the "Tick" equations look familiar enough to find a place here without resulting in a tremendous revision.
+
+  A decramped topology would allow the antiderivative method as anti-aliasing process.
+  Of course, combining it with oversampling is always an option.
+
+  ////  kMax
+  Once the Diode Ladder is non-linear. Clamping the resonance at its ultimate stable value is no longer necessary.
+  Indeed if a bounded waveshaper is used, the feedback could be considerably increased past its linear maximal value without making the filter
+  explode. It would rather self-oscillate, which happens in synthesisers and should therefore be an available setting.
+  So what? Let "res" exceed 1... If only it were that simple!
+  The computation of the cutoff offset relies on exponentiations of "res". As long as "res" stays in the range [0 , 1] these exponentiations
+  are simple curve refiners (they decelerate the slope). This no longer stands if res > 1. Then they become curve twisters that stop making sense.
+
+  An easy fix though is to replace "res" with 1 whenever re > 1 while computing the cutoff's offset.
+  This calls for testing.
+
+  ////  Bold assumption
+  I've designed this filter with the initial goal of making it non-linear at some point. I haven't tried yet. It's possible that a waveshaper
+  in the feedback path would break the cutoff normalisation (offset) since the value of  x * norm  -  k * y4  would no longer be the one used
+  to solve the ZDF equation.
+
+  But I've used the same approach on a previous unpublished filter which casually infriged Moog's patent and got satisfying results.
+  (The cutoff wasn't dependant on the resonance there though.)
+
+  "This'll work just fine!"  --  here's the bold assumption. I guess I'll find out soon enough!
+
+  Ok, that's all.
 
 
 ######################################################################################################################################
@@ -727,3 +854,92 @@
     1) If we want a stable filter, all poles must be located in the left complex semiplane ( re (pn) < 0 )
     2) If we want an unstable filter, at least 1 of the poles must be located in the right complex semiplane ( re (pn) > 0 )
     3) The limit-case is re (pn) = 0
+
+
+======================================================================================================================================
+//  ANNEXE 3
+======================================================================================================================================
+//  Traditional BLT vs Trapezoidal integration
+
+  Traditional bilinear transform applies the substitution:
+
+          2     1  -  z^-1
+  s  ->  --- * ------------          //  https://en.wikipedia.org/wiki/Bilinear_transform
+          T     1  +  z^-1
+
+  Applying this substitution inside the transfer function H(s) gives H(z), then it's just math.
+  
+  Now let's consider the transfer function of an isolated integrator:
+
+            1
+  H(s)  =  ---
+            s
+                                            T     1  +  z^-1
+  If I apply BLT to H(s), I get:  H(z)  =  --- * ------------
+                                            2     1  -  z^-1
+
+                                                                                       T     1  +  z^-1
+  If I stop assuming a normalised cutoff and inject it in H(z), I get:  H(z)  =  ωc * --- * ------------
+                                                                                       2     1  -  z^-1
+
+  ωc * T / 2 being a linear factor (a gain), I can extract it from the transfer function and apply it later to the input or the output.
+
+                               1  +  z^-1
+  So let's define:  H2(z)  =  ------------          //  Then  H(z)  =  ωcT/2 * H2(z)
+                               1  -  z^-1
+
+  Following these instructions:  https://en.wikipedia.org/wiki/Digital_biquad_filter
+  I get:  b0 = 1  ;  b1 = 1  ;  a0 = 1  ;  a1 = -1
+
+  Then:
+
+  y[n]  =  (1 / 1) * ( 1 * x[n]  +  1 * x[n-1]  -  -1 * y[n-1] )          [1]
+  y[n]  =  x[n]  +  ( x[n-1]  +  y[n-1] )
+
+  Or, in the form of a block diagram:
+
+  x -->o--->(+)---->o--> y
+       |     ^      |
+       |     |      |
+       |  [ z^-1 ]  |
+       |     ^      |
+       |     |      |
+       ---->(+)<-----
+
+  Or, if I re-inject ωcT/2 by applying it to the input:
+
+  x -->[ ωcT/2 ]-->o--->(+)---->o--> y
+                   |     ^      |
+                   |     |      |
+                   |  [ z^-1 ]  |
+                   |     ^      |
+                   |     |      |
+                   ---->(+)<-----
+
+  That's right: I've just used traditional BLT to build a trapezoidal integrator.
+  Trapezoidal integration injects the z-transform in the block diagram while *traditional* BLT injects it in the transfer function.
+
+  They are two ways of implementing the Bilinear transform, both rely on it, both end up with the same (LTI) digital transfer function.
+  Then Direct Form I, Direct Form II, Transposed Direct Form I and Transposed Direct Form II are all available regardless of how BLT has been
+  applied, they are just different interpretations of equation [1].
+  
+  LTI stands for "Linear Time Invariant". The differences between these two techniques only appear when parameters get modulated (the faster the truer).
+
+
+//  TPT vs BLT
+
+  ZDF  :=  "Zero Delay Feedback"
+
+  So far, my filter has no delay in any of its feedback loops (only the integrators have z^-1 elements).
+  So it *IS* a ZDF filter.
+
+  TPT  :=  "Topology Preserving Transform"
+
+  Naively inserting non-linearities at some points in the block diagram (like I intend to do here) instead of solving non-linear ZDF equations
+  (through Newton-Raphson or such) does *NOT* preserve the topology.                    //  https://en.wikipedia.org/wiki/Newton%27s_method
+
+  That is: this filter (with naive implementation of non-linearities) doesn't have a counterpart in the analog realm.
+  I want the filter to sound good and behave nicely when modulated, while remaining CPU-friendly. I don't care this much for faithfulness.
+  After all it's called "[generic] Diode Ladder", not "TB-303 1:1 emulation"... So why not?
+
+  Anyway, this is an example of a ZDF non-TPT filter. Which couldn't exist if these expressions were synonyms.
