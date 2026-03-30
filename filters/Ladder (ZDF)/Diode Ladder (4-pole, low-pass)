@@ -477,7 +477,7 @@
 
     y4  ≠  y4                    //    https://en.wikipedia.org/wiki/Law_of_identity
 
-  Re-defining y4, y3 and y2 is the only way (I can think of) to fix logic (this sentance makes me feel powerful... or maybe just presomptuous?)
+  Re-defining y4, y3 and y2 is the only way (I can think of) to fix logic (this sentance makes me feel powerful... or maybe just presumptuous?)
   and to store the non-linearities in z1, z2, z3 and z4 (whose computation relies on their respective outputs only).
 
 ////  Finding feedback signals
@@ -546,7 +546,7 @@
 
 
 ######################################################################################################################################
-//  FULL (minimalst) ALGORITHM
+//  FULL (minimalist) ALGORITHM
   //    This is as basic as can be: mono signal, linear processing, no optimisation (some values are computed several times,
   //    no conditional branching in parameter update, every variable is a global...)
   //
@@ -665,7 +665,7 @@
   potentially at audio rate.
 
   Then there's this article by Andy "Cytomic" Simper:    https://cytomic.com/files/dsp/matched-svf1-ivanstov.pdf
-  where Yuriy's topology is derived to implement an SVF 1-pole filter.
+  where Yuriy's topology is derived to implement an SVF TPT/ZDF 1-pole filter.
   I haven't tried implenting it but the "Tick" equations look familiar enough to find a place here without resulting in a tremendous revision.
 
   A decramped topology would allow the antiderivative method as anti-aliasing process.
