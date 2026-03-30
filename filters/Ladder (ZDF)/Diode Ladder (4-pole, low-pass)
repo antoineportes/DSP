@@ -208,7 +208,7 @@
 
 ////  Mixing cases
 
-  If "Hz" is the user-facing cutoff, (ignoring g) I want the actual cutoff to be = Hz * X when res = 0 and = Hz when res = 1.
+  If "Hz" is the user-facing cutoff, (ignoring g) I want the actual cutoff to be = Hz * X when res = 0 and = Hz * sqRt (2) when res = 1.
   So obviously X ^ (1 - res) could do. But since I'm quite happy with the behaviour of g = 2 ^ -(res / 2), I'd like the first factor to converge very
   quickly to 1. I tried X ^ (1 - res)^2 : not quick enough,  X ^ (1 - res)^3 : not quick enough,  X ^ (1 - res)^4 : perfect!
 
