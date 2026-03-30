@@ -283,7 +283,7 @@
 //  DIGITAL IMPLEMENTATION
 ////  Block diagram: replacing the integrators with trapezoidal integrators
 
-  ωc  =  cutoff (Hz)        //  (assumed pre-warped)
+  ωc  =  cutoff (rad/s)     //  (assumed pre-warped)
   T   =  1 / sRate          //  sRate  =  sampling rate
   g1  =  ωc * T / 2
   g2  =  ωc * T             //  2 * ωc * T / 2  =  2 * g1
