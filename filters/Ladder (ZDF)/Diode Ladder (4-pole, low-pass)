@@ -47,29 +47,28 @@
 
 //  Transfer function
 
-  y4 / s  =  H
-  H  =  G - y4
-  y4 * (s + 1)  =  G
-  G  =  y3 + y4
-  y4 * (s + 2)  =  y3
-  y3  =  F / s
-  y4 * (s^2  +  2 * s)  =  F
-  F  =  E - G  =  E  -  y4 * (s + 1)
-  y4 * (s^2  +  2 * s  +  s  +  1)  =  y4 * (s^2  +  3 * s  + 1)  =  E
-  E  =  y2 - y3  =  y2  -  y4 * (s + 2)
-  y4 * (s^2  +  3 * s  +  1  +  s  +  2)  =  y4 * (s^2  +  4 * s  +  3)  =  y2
-  y2  =  D / s
-  y4 * (s^3  +  4 * s^2  +  3 * s)  =  D
-  D  =  C - E  =  C  -  y4 * (s^2  +  3 * s  +  1)
-  y4 * (s^3  +  4 * s^2  +  3 * s  +  s^2  +  3 * s  +  1)  =  y4 * (s^3  +  5 * s^2  +  6 * s  +  1)  =  C
-  C  =  y1 - y2  =  y1  -  y4 * (s^2  +  4 * s  +  3)
-  y4 * (s^3  +  5 * s^2  +  6 * s  +  1  +  s^2  +  4 * s  +  3)  =  y4 * (s^3  +  6 * s^2  +  10 * s  +  4)  =  y1
-  y1  =  (2 * B) / s
-  y4 * (s^4  +  6 * s^3  +  10 * s^2  +  4 * s) / 2  =  y4 * (0.5 * s^4  +  3 * s^3  +  5 * s^2  +  2 * s)  =  B
-  B  =  A - C  =  A  -  y4 * (s^3  +  5 * s^2  +  6 * s  +  1)
-  y4 * (0.5 * s^4  +  3 * s^3  +  5 * s^2  +  2 * s  +  s^3  +  5 * s^2  +  6 * s  +  1)  =  y4 * (0.5 * s^4  +  4 * s^3  +  10 * s^2  +  8 * s  +  1)  =  A
-  A  =  x  -  k * y4
+  y4  =  H / s    <=>    H  =  y4 * s
+  H  =  G - y4    <=>    H  +  y4  =  G    <=>    y4 * s  +  y4  =  G    <=>    G  =  y4 * (s + 1)
+  G  =  y3 - y4    <=>    G  +  y4  =  y3    <=>    y4 * (s + 1)  +  y4  =  y3    <=>    y3  =  y4 * (s + 2)
+  y3  =  F / s    <=>    y3 * s  =  F    <=>    y4 * (s + 2) * s  =  F    <=>    F  =  y4 * (s^2  +  2 * s)
+  F  =  E - G  =  E  -  y4 * (s + 1)    <=>    F  +  y4 * (s + 1)  =  E    <=>    y4 * (s^2  +  2 * s)  +  y4 * (s + 1)  =  E
+  <=>    E  =  y4 * (s^2  +  3 * s  + 1)
+  E  =  y2 - y3  =  y2  -  y4 * (s + 2)    <=>    E  +  y4 * (s + 2)  =  y2    <=>    y4 * (s^2  +  3 * s  + 1)  +  y4 * (s + 2)  =  y2
+  <=>    y2  =  y4 * (s^2  +  4 * s  +  3)
+  y2  =  D / s    <=>    y2 * s  =  D    <=>    y4 * (s^2  +  4 * s  +  3) * s  =  D
+  <=>    D  =  y4 * (s^3  +  4 * s^2  +  3 * s)
+  D  =  C - E  =  C  -  y4 * (s^2  +  3 * s  +  1)    <=>    D  +  y4 * (s^2  +  3 * s  +  1)  =  C
+  <=>    y4 * (s^3  +  4 * s^2  +  3 * s)  +  y4 * (s^2  +  3 * s  +  1)  =  C    <=>    C  =  y4 * (s^3  +  5 * s^2  +  6 * s  +  1)
+  C  =  y1 - y2  =  y1  -  y4 * (s^2  +  4 * s  +  3)    <=>    C  +  y4 * (s^2  +  4 * s  +  3)  =  y1
+  <=>    y4 * (s^3  +  5 * s^2  +  6 * s  +  1)  +  y4 * (s^2  +  4 * s  +  3)  =  y1    <=>    y1  =  y4 * (s^3  +  6 * s^2  +  10 * s  +  4)
+  y1  =  B * (2 / s)    <=>    y1 * (s / 2)  =  B    <=>    y4 * (s^3  +  6 * s^2  +  10 * s  +  4) * (s / 2)  =  B
+  <=>    B  =  y4 * (0.5 * s^4  +  3 * s^3  +  5 * s^2  +  2 * s)
+  B  =  A - C  =  A  -  y4 * (s^3  +  5 * s^2  +  6 * s  +  1)    <=>    B  +  y4 * (s^3  +  5 * s^2  +  6 * s  +  1)  =  A
+  <=>    y4 * (0.5 * s^4  +  3 * s^3  +  5 * s^2  +  2 * s)  +  y4 * (s^3  +  5 * s^2  +  6 * s  +  1)  =  A
+  <=>    A  =  y4 * (0.5 * s^4  +  4 * s^3  +  10 * s^2  +  8 * s  +  1)
+  A  =  x  -  k * y4    <=>    A  +  k * y4  =  x    <=>    y4 * (0.5 * s^4  +  4 * s^3  +  10 * s^2  +  8 * s  +  1)  +  k * y4  =  x
   y4 * (0.5 * s^4  +  4 * s^3  +  10 * s^2  +  8 * s  +  1  +  k)  =  x
+  <=>    y4 / x  =  1 / (0.5 * s^4  +  4 * s^3  +  10 * s^2  +  8 * s  +  1  +  k)
 
                                         1
   H(s)  =  ----------------------------------------------------------
@@ -86,7 +85,7 @@
   Two things I'like to change:
     1) When there's no (or little) resonance the amplitude at the cutoff frequency is ridiculously low (~= -20 dB). The shape of the curve is nice but
       it looks shifted far left. Offseting the cutoff to compensate should do it, but as soon as there is resonance, I don't want the peak frequency to
-      exceed wc. So what I need is a factor for the cutoff that's inversely proportional to k.          //  Or more correctly: a factor that decreases 
+      exceed ωc. So what I need is a factor for the cutoff that's inversely proportional to k.          //  Or more correctly: a factor that decreases 
                                                                                                         //  when k increases.
     2) When there is resonance, the pass-band attenuation is pretty insane (less than -24 dB when k is high). I need to find the amplitude of the pass-
       band and multiply the input or the output by its inverse. With non-linearities involved, normalising the output means less distortion...
