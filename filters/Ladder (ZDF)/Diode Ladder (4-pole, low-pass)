@@ -426,7 +426,7 @@
   and:  δ  =  y2 + y4
   
   LP4 starts at y3 and ends at y4.                                                                     g1  * y3  +  z4
-  y4  =  (y3  -  2 * y4) * g1  +  z4    =>    y4 * (1  +  2 * g1)  =  g1 * y3  +  z4    =>    y4  =  -----------------  =  f4 (y3)
+  y4  =  (y3  -  2 * y4) * g1  +  z4    =>    y4 * (1  +  2 * g1)  =  g1 * y3  +  z4    =>    y4  =  ------------------  =  f4 (y3)
                                                                                                            1 + g2
   
   So I need y4 and y2 to process LP1, y3 to process LP2 and y4 to process LP3.
@@ -809,7 +809,7 @@
   Then if re (s) is positive, -re (s) is negative and re (-s * t) decays linearly ad infinitum.
   And if re (s) is negative, -re (s) is positive and re (-s * t) grows linearly ad infinitum.
 
-  The rules of exponentiation (including Euler's fromula) state that:
+  The rules of exponentiation (including Euler's formula) state that:
   exp (x + y)  =  exp (x) * exp (y)
   exp (-x)  =  1 / exp (x)
   exp (i * x)  =  cos (x) + i * sin (x)   ( i = sqRt (-1) )
